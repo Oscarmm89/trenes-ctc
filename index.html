@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="web_dashboard" name="shell-type"/>
+  <title>Vía Libre - Centro de Control de Tráfico Ferroviario (CTC)</title>
+  
+  <!-- Google Material Symbols & Web Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@100..900&family=Space+Grotesk:wght@100..900&display=swap" rel="stylesheet"/>
+  
+  <!-- Leaflet CSS & JS (OpenStreetMap) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-error": "#690005",
+            "surface-bright": "#373941",
+            "tertiary-container": "#ffb7b6",
+            "secondary": "#ffbd58",
+            "inverse-on-surface": "#2e3038",
+            "error": "#ffb4ab",
+            "surface-container-highest": "#33343c",
+            "primary-fixed": "#4dffb2",
+            "on-tertiary-container": "#ac0026",
+            "secondary-container": "#ea9f00",
+            "tertiary": "#ffdedc",
+            "inverse-surface": "#e2e2ec",
+            "on-secondary-fixed": "#291800",
+            "on-surface-variant": "#bacbbe",
+            "secondary-fixed": "#ffddb1",
+            "surface-variant": "#33343c",
+            "on-tertiary-fixed": "#410008",
+            "error-container": "#93000a",
+            "inverse-primary": "#006c46",
+            "on-primary-fixed-variant": "#005234",
+            "surface-dim": "#11131a",
+            "tertiary-fixed-dim": "#ffb3b2",
+            "background": "#11131a",
+            "outline": "#849589",
+            "primary": "#6dffba",
+            "on-secondary": "#442b00",
+            "on-primary": "#003822",
+            "on-surface": "#e2e2ec",
+            "on-error-container": "#ffdad6",
+            "on-primary-container": "#00613e",
+            "surface-container-high": "#282a31",
+            "on-tertiary": "#680013",
+            "surface": "#11131a",
+            "on-background": "#e2e2ec",
+            "on-secondary-container": "#5b3b00",
+            "surface-container-lowest": "#0c0e15",
+            "on-tertiary-fixed-variant": "#92001f",
+            "surface-container": "#1d1f27",
+            "on-primary-fixed": "#002112",
+            "secondary-fixed-dim": "#ffba4b",
+            "on-secondary-fixed-variant": "#624000",
+            "surface-container-low": "#191b22",
+            "primary-fixed-dim": "#00e297",
+            "primary-container": "#00e599",
+            "tertiary-fixed": "#ffdad9",
+            "surface-tint": "#00e297",
+            "outline-variant": "#3b4a41"
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "0.75rem"
+          },
+          spacing: {
+            "gutter-lg": "1.5rem",
+            "gutter": "1rem",
+            "margin-lg": "2rem",
+            "space-lg": "1rem",
+            "space-md": "0.75rem",
+            "margin": "1rem",
+            "space-xs": "0.25rem",
+            "margin-md": "1.5rem",
+            "space-sm": "0.5rem",
+            "space-xl": "1.5rem",
+            "space-2xl": "2rem"
+          },
+          fontFamily: {
+            "label-sm": ["JetBrains Mono"],
+            "headline-md": ["Space Grotesk"],
+            "headline-xl": ["Space Grotesk"],
+            "headline-lg": ["Space Grotesk"],
+            "body-lg": ["Geist"],
+            "code-lg": ["JetBrains Mono"],
+            "label-md": ["Geist"],
+            "body-md": ["Geist"],
+            "code-md": ["JetBrains Mono"],
+            "body-sm": ["Geist"],
+            "headline-sm": ["Space Grotesk"],
+            "headline-xl-mobile": ["Space Grotesk"],
+            "headline-lg-mobile": ["Space Grotesk"],
+            "code-sm": ["JetBrains Mono"]
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    @layer base {
+      html, body { margin: 0; padding: 0; }
+      body { overscroll-behavior: none; }
+      main > :first-child { margin-top: 0 !important; }
+      main > :last-child { margin-bottom: 0 !important; }
+    }
+    ::-webkit-scrollbar { display: none; }
+
+    .ctc-scrollbar::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+      display: block;
+    }
+    .ctc-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .ctc-scrollbar::-webkit-scrollbar-thumb {
+      background: #282a31;
+      border-radius: 9999px;
+    }
+    .ctc-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #3b4a41;
+    }
+
+    /* Leaflet Dark Aesthetic */
+    #leaflet-map {
+      width: 100%;
+      height: 100%;
+      min-height: 580px;
+      background-color: #0c0e15;
+      z-index: 10;
+    }
+    .leaflet-container {
+      background-color: #0c0e15 !important;
+      font-family: 'Geist', sans-serif;
+    }
+    .leaflet-tile-pane {
+      filter: invert(100%) hue-rotate(180deg) brightness(82%) contrast(118%) grayscale(25%);
+    }
+
+    /* Popups Leaflet */
+    .leaflet-popup-content-wrapper {
+      background: #1d1f27 !important;
+      color: #e2e2ec !important;
+      border: 1px solid #3b4a41 !important;
+      border-radius: 10px !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.75) !important;
+      padding: 0 !important;
+      overflow: hidden;
+    }
+    .leaflet-popup-content {
+      margin: 0 !important;
+      line-height: 1.4 !important;
+    }
+    .leaflet-popup-tip {
+      background: #1d1f27 !important;
+    }
+    .leaflet-popup-close-button {
+      color: #849589 !important;
+      top: 10px !important;
+      right: 10px !important;
+      font-size: 16px !important;
+    }
+    .leaflet-popup-close-button:hover {
+      color: #6dffba !important;
+    }
+
+    .leaflet-control-attribution {
+      background: rgba(17, 19, 26, 0.88) !important;
+      color: #849589 !important;
+      font-family: 'JetBrains Mono', monospace !important;
+      font-size: 9px !important;
+      padding: 3px 8px !important;
+      border-radius: 4px !important;
+      margin: 8px !important;
+      border: 1px solid rgba(59, 74, 65, 0.4);
+    }
+    .leaflet-control-attribution a {
+      color: #6dffba !important;
+      text-decoration: none !important;
+    }
+    .leaflet-control-zoom {
+      display: none !important;
+    }
+
+    /* Custom Marker Styling */
+    .train-marker-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(17, 19, 26, 0.94);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(109, 255, 186, 0.65);
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.75);
+      color: #ffffff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      user-select: none;
+    }
+    .train-marker-pill:hover,
+    .train-marker-pill.selected {
+      transform: scale(1.14);
+      border-color: #6dffba;
+      box-shadow: 0 0 18px rgba(0, 229, 153, 0.65);
+      z-index: 1000 !important;
+    }
+    .train-marker-pill.stopped {
+      border-color: rgba(255, 189, 88, 0.75);
+    }
+    .train-marker-pill.stopped:hover,
+    .train-marker-pill.stopped.selected {
+      border-color: #ffbd58;
+      box-shadow: 0 0 18px rgba(255, 189, 88, 0.65);
+    }
+
+    .train-beacon-pulse {
+      position: relative;
+      display: flex;
+      width: 8px;
+      height: 8px;
+    }
+    .train-beacon-pulse .ping {
+      position: absolute;
+      display: inline-flex;
+      height: 100%;
+      width: 100%;
+      border-radius: 9999px;
+      opacity: 0.75;
+      animation: ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+    .train-beacon-pulse .dot {
+      position: relative;
+      display: inline-flex;
+      border-radius: 9999px;
+      height: 8px;
+      width: 8px;
+    }
+    @keyframes ping {
+      75%, 100% {
+        transform: scale(2.2);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-surface font-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
+
+  <!-- ========================================== -->
+  <!-- LATERAL DOCK: NAVEGACIÓN Y TELEMÁTICA CTC  -->
+  <!-- ========================================== -->
+  <aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.4)]">
+    <div class="flex flex-col">
+      <!-- Brand Header -->
+      <div class="h-16 px-space-lg flex items-center gap-space-sm bg-surface-container-lowest border-b border-surface-container-high/40">
+        <span class="material-symbols-outlined text-primary text-[26px]">train</span>
+        <div class="flex flex-col">
+          <span class="font-headline-sm text-headline-sm font-bold tracking-tight text-on-surface leading-none">VÍA LIBRE</span>
+          <span class="font-code-sm text-code-sm text-primary uppercase tracking-wider mt-0.5">CTC Telemática</span>
+        </div>
+      </div>
+
+      <!-- Navigation Section -->
+      <div class="px-space-md py-space-sm">
+        <div class="px-space-sm py-space-xs font-code-sm text-code-sm uppercase tracking-wider text-on-surface-variant/70">
+          Consola CTC
+        </div>
+      </div>
+      
+      <!-- Menú lateral interactivo con todas las pestañas operativas -->
+      <nav id="main-nav" class="flex flex-col gap-space-xs px-space-sm">
+        <button class="nav-item flex items-center gap-space-md px-space-md py-space-sm rounded-lg bg-surface-container-high text-primary font-bold shadow-sm transition-colors text-left w-full" data-tab="supervision">
+          <span class="material-symbols-outlined text-[20px]">radar</span>
+          <span class="font-label-md text-label-md">Supervisión CTC</span>
+        </button>
+        <button class="nav-item flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors text-left w-full" data-tab="enrutamiento">
+          <span class="material-symbols-outlined text-[20px]">alt_route</span>
+          <span class="font-label-md text-label-md">Enrutamiento y Bloqueos</span>
+        </button>
+        <button class="nav-item flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors text-left w-full" data-tab="flota">
+          <span class="material-symbols-outlined text-[20px]">speed</span>
+          <span class="font-label-md text-label-md">Flota y Telemetría</span>
+        </button>
+        <button class="nav-item flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors text-left w-full" data-tab="incidencias">
+          <span class="material-symbols-outlined text-[20px]">warning</span>
+          <span class="font-label-md text-label-md">Incidencias</span>
+        </button>
+        <button class="nav-item flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors text-left w-full" data-tab="registro">
+          <span class="material-symbols-outlined text-[20px]">history_toggle_off</span>
+          <span class="font-label-md text-label-md">Registro de Tráfico</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Subsystem Status Widget -->
+    <div class="p-space-md bg-surface-container-lowest m-space-sm rounded-lg flex flex-col gap-space-xs border border-surface-container-high/40">
+      <div class="flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant">
+        <span>CANAL GSM-R</span>
+        <span class="text-primary font-bold flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+          ACTIVO
+        </span>
+      </div>
+      <div class="flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant">
+        <span>FEED RENFE</span>
+        <span id="api-status-badge" class="text-primary font-bold">CONECTANDO</span>
+      </div>
+      <div class="flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant">
+        <span>LATENCIA PROXY</span>
+        <span id="api-latency-badge" class="text-on-surface font-bold">-- ms</span>
+      </div>
+      <div class="w-full bg-surface-container h-1 rounded-full overflow-hidden mt-space-xs">
+        <div id="connection-progress" class="bg-primary h-full w-[94%] transition-all duration-300"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================== -->
+  <!-- MAIN SHELL: BARRA SUPERIOR Y WORKSPACE     -->
+  <!-- ========================================== -->
+  <div class="pl-64">
+    <!-- Header -->
+    <header class="fixed top-0 left-64 right-0 h-16 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.4)] z-40 flex items-center justify-between px-space-xl border-b border-surface-container-high/40">
+      <div class="flex items-center gap-space-xl">
+        <div class="flex flex-col">
+          <span class="font-headline-sm text-headline-sm font-bold text-on-surface tracking-tight">Centro de Control de Tráfico Ferroviario (CTC)</span>
+          <div class="flex items-center gap-space-sm mt-0.5">
+            <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary-container/15 text-primary">
+              <span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+              <span class="font-label-sm text-label-sm uppercase tracking-wider">Conectado a Red Ferroviaria (ADIF / Renfe GTFS-RT Oficial)</span>
+            </div>
+          </div>
+        </div>
+        <!-- Enlaces superiores sincronizados con las pestañas -->
+        <nav class="hidden xl:flex items-center gap-space-lg">
+          <button class="top-nav-btn font-label-md text-label-md text-primary font-bold" data-tab="supervision">Malla General</button>
+          <button class="top-nav-btn font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" data-tab="enrutamiento">Topología de Vía</button>
+          <button class="top-nav-btn font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" data-tab="flota">Tráfico Activo</button>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-space-lg">
+        <!-- Live System Clock -->
+        <div class="flex items-center gap-space-md bg-surface-container-low px-space-md py-1.5 rounded-lg border border-surface-container-high/50">
+          <span class="material-symbols-outlined text-primary text-[18px]">schedule</span>
+          <div class="flex flex-col items-end">
+            <span id="ctc-clock" class="font-code-md text-code-md text-primary font-bold tracking-wider">--:--:-- <span class="font-code-sm text-code-sm text-on-surface-variant font-normal">UTC+1</span></span>
+            <span id="ctc-date" class="font-label-sm text-label-sm text-on-surface-variant uppercase">-- --- ----</span>
+          </div>
+        </div>
+
+        <!-- Mode controls -->
+        <div class="flex items-center gap-space-xs bg-surface-container px-space-xs py-space-xs rounded-lg border border-surface-container-high/40">
+          <button class="p-1.5 rounded text-primary bg-surface-container-high transition-colors" title="Vista Cartográfica OpenStreetMap" type="button" onclick="switchTab('supervision')">
+            <span class="material-symbols-outlined text-[20px]">map</span>
+          </button>
+          <button class="p-1.5 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" id="btn-fullscreen" title="Modo Pantalla Completa" type="button">
+            <span class="material-symbols-outlined text-[20px]">fullscreen</span>
+          </button>
+        </div>
+        
+        <!-- User Avatar -->
+        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-xs" title="Operador CTC">
+          OP
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area: Vistas de la aplicación -->
+    <main class="relative pt-16 bg-surface w-full px-gutter-lg pb-space-2xl min-h-screen">
+      <div class="flex flex-col w-full pt-4">
+
+        <!-- ========================================== -->
+        <!-- PESTAÑA 1: SUPERVISIÓN CTC (MAPA + LISTA)  -->
+        <!-- ========================================== -->
+        <div id="view-supervision" class="view-panel grid grid-cols-1 xl:grid-cols-12 gap-space-lg w-full h-[calc(100vh-6rem)] min-h-[780px]">
+          
+          <!-- Panel Izquierdo de Telemetría -->
+          <div class="xl:col-span-4 flex flex-col h-full bg-surface-container-low rounded-xl shadow-xl overflow-hidden border border-surface-container-high/40">
+            <div class="p-space-lg bg-surface-container flex flex-col gap-space-sm shadow-sm border-b border-surface-container-high/40">
+              <div class="flex items-center justify-between">
+                <div class="flex items-baseline gap-space-sm">
+                  <h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">Vía libre</h1>
+                  <span class="font-code-sm text-code-sm text-primary uppercase font-semibold">CTC RED 01</span>
+                </div>
+                <span class="material-symbols-outlined text-primary text-[22px]" title="Supervisión Activa">sensors</span>
+              </div>
+              
+              <div class="inline-flex items-center gap-2 px-space-sm py-1 rounded-full bg-surface-container-high w-fit shadow-inner">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                </span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">
+                  En vivo, GPS Renfe: <strong id="train-counter-header" class="text-secondary font-bold">Cargando telemetría...</strong>
+                </span>
+              </div>
+
+              <!-- Filter Pill Chips -->
+              <div class="flex items-center gap-space-xs overflow-x-auto ctc-scrollbar pt-space-xs pb-0.5" id="service-filters">
+                <button class="filter-btn active px-3 py-1 rounded-full font-code-sm text-code-sm font-semibold transition-all bg-primary text-on-primary shadow-sm" data-category="ALL" type="button">
+                  TODOS <span id="cnt-all">--</span>
+                </button>
+                <button class="filter-btn px-3 py-1 rounded-full font-code-sm text-code-sm font-semibold transition-all bg-surface-container-high text-on-surface-variant hover:text-on-surface hover:bg-surface-bright" data-category="AVE" type="button">
+                  AVE <span id="cnt-ave">--</span>
+                </button>
+                <button class="filter-btn px-3 py-1 rounded-full font-code-sm text-code-sm font-semibold transition-all bg-surface-container-high text-on-surface-variant hover:text-on-surface hover:bg-surface-bright" data-category="AVLO" type="button">
+                  Avlo <span id="cnt-avlo">--</span>
+                </button>
+                <button class="filter-btn px-3 py-1 rounded-full font-code-sm text-code-sm font-semibold transition-all bg-surface-container-high text-on-surface-variant hover:text-on-surface hover:bg-surface-bright" data-category="AVANT" type="button">
+                  Avant <span id="cnt-avant">--</span>
+                </button>
+                <button class="filter-btn px-3 py-1 rounded-full font-code-sm text-code-sm font-semibold transition-all bg-surface-container-high text-on-surface-variant hover:text-on-surface hover:bg-surface-bright" data-category="ALVIA" type="button">
+                  Alvia <span id="cnt-alvia">--</span>
+                </button>
+                <button class="filter-btn px-3 py-1 rounded-full font-code-sm text-code-sm font-semibold transition-all bg-surface-container-high text-on-surface-variant hover:text-on-surface hover:bg-surface-bright" data-category="EUROMED" type="button">
+                  Euro <span id="cnt-euromed">--</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Scrollable Telemetry Stack -->
+            <div class="flex-1 overflow-y-auto ctc-scrollbar p-space-lg flex flex-col gap-space-lg">
+              <!-- Global Punctuality & Fleet Stat Block -->
+              <div class="bg-surface-container rounded-xl p-space-md shadow-md flex flex-col gap-space-md border border-surface-container-high/30">
+                <div class="flex items-center justify-between font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
+                  <span>Estado de Circulación en Red</span>
+                  <span id="total-circulating-badge" class="font-code-sm text-code-sm text-primary font-bold">-- DETECTADOS</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-space-sm">
+                  <div class="bg-surface-container-lowest p-space-md rounded-lg flex flex-col gap-1 shadow-sm border border-surface-container-high/30">
+                    <div class="flex items-center justify-between">
+                      <span class="font-label-sm text-label-sm text-on-surface-variant">EN RUTA</span>
+                      <span class="material-symbols-outlined text-primary text-[18px]">play_circle</span>
+                    </div>
+                    <div class="flex items-baseline gap-1.5 mt-1">
+                      <span id="stat-moving-count" class="font-headline-xl text-headline-xl font-bold font-code-lg text-primary tracking-tight leading-none">--</span>
+                      <span class="font-label-sm text-label-sm text-on-surface-variant">trenes</span>
+                    </div>
+                    <span id="stat-moving-pct" class="font-code-sm text-code-sm text-primary/80 mt-0.5">--% en marcha</span>
+                  </div>
+
+                  <div class="bg-surface-container-lowest p-space-md rounded-lg flex flex-col gap-1 shadow-sm border border-surface-container-high/30">
+                    <div class="flex items-center justify-between">
+                      <span class="font-label-sm text-label-sm text-on-surface-variant">EN ESTACIÓN</span>
+                      <span class="material-symbols-outlined text-secondary text-[18px]">pause_circle</span>
+                    </div>
+                    <div class="flex items-baseline gap-1.5 mt-1">
+                      <span id="stat-stopped-count" class="font-headline-xl text-headline-xl font-bold font-code-lg text-secondary tracking-tight leading-none">--</span>
+                      <span class="font-label-sm text-label-sm text-on-surface-variant">trenes</span>
+                    </div>
+                    <span id="stat-stopped-pct" class="font-code-sm text-code-sm text-secondary/80 mt-0.5">--% detenidos</span>
+                  </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5 pt-1">
+                  <div class="flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant">
+                    <span>Ratio Tráfico Dinámico vs Detenido</span>
+                    <span id="stat-ratio-text" class="font-bold text-on-surface">--%</span>
+                  </div>
+                  <div class="h-2 w-full bg-surface-container-lowest rounded-full overflow-hidden flex border border-surface-container-high/40">
+                    <div id="bar-moving" class="h-full bg-primary transition-all duration-700" style="width: 70%;"></div>
+                    <div id="bar-stopped" class="h-full bg-secondary transition-all duration-700" style="width: 30%;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Live Train Service Cards Feed -->
+              <div class="flex flex-col gap-space-sm">
+                <div class="flex items-center justify-between px-1">
+                  <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Malla en Circulación (GPS Renfe)</span>
+                  <span id="feed-showing-count" class="font-code-sm text-code-sm text-primary">0 visibles</span>
+                </div>
+                <div id="trains-feed-container" class="flex flex-col gap-space-sm">
+                  <div class="p-6 text-center text-on-surface-variant flex flex-col items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[28px] animate-spin">sync</span>
+                    <span class="font-code-sm text-code-sm">Conectando con la API de Renfe...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel Derecho del Mapa Leaflet -->
+          <div class="xl:col-span-8 flex flex-col h-full bg-surface-container-lowest rounded-xl shadow-xl overflow-hidden relative" id="map-viewport">
+            <div class="absolute top-4 left-4 right-4 z-30 flex flex-wrap items-center justify-between gap-space-md pointer-events-none">
+              <div class="pointer-events-auto flex items-center gap-space-sm bg-surface-container-low/90 backdrop-blur-md px-space-md py-1.5 rounded-lg shadow-lg border border-surface-container-high/40">
+                <span class="material-symbols-outlined text-primary text-[18px]">public</span>
+                <span class="font-code-sm text-code-sm font-semibold text-on-surface">RED ADIF-ALTA VELOCIDAD · ESPAÑA</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-code-sm font-bold bg-primary-container/20 text-primary uppercase">OPENSTREETMAP CTC</span>
+              </div>
+              <div class="pointer-events-auto flex items-center gap-space-md bg-surface-container-low/95 backdrop-blur-md px-space-md py-1.5 rounded-lg shadow-lg border border-surface-container-high/40">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_#6dffba]"></span>
+                  <span class="font-label-sm text-label-sm text-on-surface">En Ruta (Movimiento)</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-secondary shadow-[0_0_8px_#ffbd58]"></span>
+                  <span class="font-label-sm text-label-sm text-on-surface">En Estación (Detenido)</span>
+                </div>
+                <div class="hidden sm:flex items-center gap-1 pl-2 font-code-sm text-code-sm text-on-surface-variant border-l border-surface-variant">
+                  <span>Trenes en mapa:</span>
+                  <span id="legend-map-count" class="text-primary font-bold">--</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="leaflet-map" class="w-full h-full"></div>
+
+            <div class="absolute bottom-5 right-5 z-30 flex items-center gap-space-sm">
+              <button class="w-10 h-10 rounded-xl bg-surface-container/90 hover:bg-surface-bright text-on-surface-variant hover:text-primary backdrop-blur-md flex items-center justify-center shadow-lg transition-transform active:scale-95 border border-surface-container-high/50" id="btn-refresh" title="Refrescar telemetría Renfe ahora" type="button">
+                <span class="material-symbols-outlined text-[20px]" id="refresh-icon">sync</span>
+              </button>
+              <div class="flex items-center bg-surface-container/90 backdrop-blur-md rounded-xl p-1 shadow-lg border border-surface-container-high/50">
+                <button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface hover:text-primary hover:bg-surface-bright transition-colors active:scale-90" id="btn-zoom-in" title="Aumentar Zoom" type="button">
+                  <span class="material-symbols-outlined text-[20px]">add</span>
+                </button>
+                <div class="w-px h-5 bg-surface-variant mx-0.5"></div>
+                <button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface hover:text-primary hover:bg-surface-bright transition-colors active:scale-90" id="btn-zoom-out" title="Reducir Zoom" type="button">
+                  <span class="material-symbols-outlined text-[20px]">remove</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="absolute bottom-5 left-5 z-30 flex items-center gap-space-md bg-surface-container/90 backdrop-blur-md px-space-md py-2 rounded-xl shadow-lg border border-surface-container-high/50">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[18px]">satellite_alt</span>
+                <span class="font-code-sm text-code-sm text-on-surface">CADENCIA CTC:</span>
+                <span id="countdown-badge" class="font-code-sm text-code-sm text-primary font-bold">15s</span>
+              </div>
+              <div class="h-3 w-px bg-surface-variant"></div>
+              <div class="flex items-center gap-1.5 font-code-sm text-code-sm text-on-surface-variant">
+                <span>FEED:</span>
+                <span id="active-proxy-name" class="text-secondary font-bold truncate max-w-[160px]">Conectando...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PESTAÑA 2: ENRUTAMIENTO Y BLOQUEOS         -->
+        <!-- ========================================== -->
+        <div id="view-enrutamiento" class="view-panel hidden flex-col gap-space-lg w-full h-[calc(100vh-6rem)] min-h-[780px] overflow-y-auto ctc-scrollbar">
+          <div class="bg-surface-container-low p-space-lg rounded-xl border border-surface-container-high/40 flex items-center justify-between shadow-lg">
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[28px]">alt_route</span>
+                <h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Topología de Corredores y Bloqueo de Vía</h2>
+              </div>
+              <p class="font-body-md text-on-surface-variant mt-1">Supervisión de cantones de señalización ERTMS L2 y mallas de circulación en corredores de alta velocidad.</p>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="bg-surface-container px-4 py-2 rounded-lg border border-surface-container-high/50 flex flex-col items-end">
+                <span class="font-label-sm text-label-sm text-on-surface-variant">SISTEMA ETCS / ASFA</span>
+                <span class="font-code-sm text-primary font-bold">L2 AUTOMÁTICO</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Corredores Grid -->
+          <div id="corridors-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-space-lg pb-12">
+            <!-- Dynamic corridor cards populated via JS -->
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PESTAÑA 3: FLOTA Y TELEMETRÍA (TABLA/GRID) -->
+        <!-- ========================================== -->
+        <div id="view-flota" class="view-panel hidden flex-col gap-space-md w-full h-[calc(100vh-6rem)] min-h-[780px] overflow-hidden">
+          <div class="bg-surface-container-low p-space-md rounded-xl border border-surface-container-high/40 flex flex-wrap items-center justify-between gap-space-md shadow-lg shrink-0">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-primary text-[28px]">speed</span>
+              <div class="flex flex-col">
+                <h2 class="font-headline-md text-headline-md font-bold text-on-surface leading-tight">Flota de Alta Velocidad y Larga Distancia</h2>
+                <span class="font-code-sm text-code-sm text-primary">Renfe Operadora · Telemetría GPS en Vivo</span>
+              </div>
+            </div>
+
+            <!-- Buscador y Filtros -->
+            <div class="flex items-center gap-space-md">
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-[18px]">search</span>
+                <input id="flota-search-input" type="text" placeholder="Buscar tren (ej: 05382, S-103, Barcelona)..." class="bg-surface-container-lowest border border-surface-container-high/60 rounded-lg pl-9 pr-4 py-2 font-code-sm text-xs text-on-surface w-72 focus:outline-none focus:border-primary transition-colors">
+              </div>
+              <span id="flota-total-badge" class="px-3 py-1.5 bg-primary/10 text-primary font-code-sm text-xs font-bold rounded-lg border border-primary/30">
+                -- Trenes
+              </span>
+            </div>
+          </div>
+
+          <!-- Tabla de Telemetría -->
+          <div class="flex-1 bg-surface-container-low rounded-xl border border-surface-container-high/40 overflow-hidden shadow-xl flex flex-col">
+            <div class="overflow-y-auto ctc-scrollbar flex-1">
+              <table class="w-full text-left border-collapse">
+                <thead class="bg-surface-container-lowest sticky top-0 z-20 border-b border-surface-container-high/50 font-code-sm text-xs text-on-surface-variant uppercase tracking-wider">
+                  <tr>
+                    <th class="py-3 px-4">Identificador</th>
+                    <th class="py-3 px-4">Tipo / Material</th>
+                    <th class="py-3 px-4">Estado Operativo</th>
+                    <th class="py-3 px-4">Próxima Estación / Cantón</th>
+                    <th class="py-3 px-4">Coordenadas GPS</th>
+                    <th class="py-3 px-4 text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="flota-table-body" class="divide-y divide-surface-container-high/20 font-code-sm text-xs text-on-surface">
+                  <!-- Filas dinámicas -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PESTAÑA 4: INCIDENCIAS                     -->
+        <!-- ========================================== -->
+        <div id="view-incidencias" class="view-panel hidden flex-col gap-space-lg w-full h-[calc(100vh-6rem)] min-h-[780px] overflow-y-auto ctc-scrollbar pb-12">
+          <div class="bg-surface-container-low p-space-lg rounded-xl border border-surface-container-high/40 flex items-center justify-between shadow-lg">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-secondary text-[30px]">warning</span>
+              <div class="flex flex-col">
+                <h2 class="font-headline-lg text-headline-lg font-bold text-on-surface leading-tight">Gestión de Incidencias y Estado de Vía</h2>
+                <span class="font-body-md text-on-surface-variant">Monitorización de anomalías, limitaciones temporales de velocidad (LTV) y paradas prolongadas.</span>
+              </div>
+            </div>
+            <span id="incidencias-status-badge" class="px-4 py-1.5 rounded-full font-code-sm text-xs font-bold bg-secondary/15 text-secondary border border-secondary/30">
+              MONITORIZACIÓN NOMINAL
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+            <div class="bg-surface-container p-space-md rounded-xl border border-surface-container-high/30 shadow-md">
+              <span class="font-label-sm text-on-surface-variant block uppercase">Trenes en Estación</span>
+              <span id="incidencias-stopped-count" class="font-headline-xl text-secondary font-bold font-code-lg">--</span>
+              <span class="font-body-sm text-on-surface-variant block mt-1">Paradas reglamentarias y operativas</span>
+            </div>
+            <div class="bg-surface-container p-space-md rounded-xl border border-surface-container-high/30 shadow-md">
+              <span class="font-label-sm text-on-surface-variant block uppercase">Cantones Ocupados</span>
+              <span id="incidencias-active-count" class="font-headline-xl text-primary font-bold font-code-lg">--</span>
+              <span class="font-body-sm text-on-surface-variant block mt-1">Bloqueos de sección activos</span>
+            </div>
+            <div class="bg-surface-container p-space-md rounded-xl border border-surface-container-high/30 shadow-md">
+              <span class="font-label-sm text-on-surface-variant block uppercase">Índice de Puntualidad Estimado</span>
+              <span class="font-headline-xl text-primary font-bold font-code-lg">94.8%</span>
+              <span class="font-body-sm text-on-surface-variant block mt-1">Sin cortes mayores de catenaria</span>
+            </div>
+          </div>
+
+          <div class="bg-surface-container-low rounded-xl border border-surface-container-high/40 p-space-lg shadow-xl flex flex-col gap-space-md">
+            <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[20px]">receipt_long</span>
+              Registro de Alarmas y Trenes Estacionados
+            </h3>
+            <div id="incidencias-list-container" class="flex flex-col gap-space-sm">
+              <!-- Alarmas dinámicas -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PESTAÑA 5: REGISTRO DE TRÁFICO (LOGS EN VIVO) -->
+        <!-- ========================================== -->
+        <div id="view-registro" class="view-panel hidden flex-col gap-space-md w-full h-[calc(100vh-6rem)] min-h-[780px] overflow-hidden">
+          <div class="bg-surface-container-low p-space-md rounded-xl border border-surface-container-high/40 flex items-center justify-between shadow-lg shrink-0">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-primary text-[28px]">terminal</span>
+              <div class="flex flex-col">
+                <h2 class="font-headline-md text-headline-md font-bold text-on-surface leading-tight">Consola de Eventos y Registro de Tráfico</h2>
+                <span class="font-code-sm text-code-sm text-primary">Telemetría cruda, transiciones de cantón y sincronizaciones</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-space-sm">
+              <button onclick="clearEventLogs()" class="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-code-sm text-xs font-semibold transition-colors flex items-center gap-1.5 border border-surface-container-high">
+                <span class="material-symbols-outlined text-[16px]">delete_sweep</span> Limpiar Consola
+              </button>
+            </div>
+          </div>
+
+          <!-- Terminal Container -->
+          <div class="flex-1 bg-surface-container-lowest rounded-xl border border-surface-container-high/50 p-4 font-['JetBrains_Mono'] text-xs overflow-y-auto ctc-scrollbar shadow-2xl flex flex-col gap-1.5" id="terminal-log-container">
+            <!-- Event logs -->
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT: LÓGICA INTEGRADA MULTI-PESTAÑA -->
+  <!-- ========================================== -->
+  <script>
+    const RENFE_FEED_URL = 'https://gtfsrt.renfe.com/vehicle_positions_LD.json';
+    const POLL_INTERVAL_MS = 15000;
+
+    const DATA_SOURCES = [
+      { name: 'Proxy Local / Servidor', url: '/api/renfe', parse: (res) => res.json() },
+      { name: 'Daemon Local (3000)', url: 'http://localhost:3000/api/renfe', parse: (res) => res.json() },
+      { name: 'Caché Local Renfe', url: './renfe_live.json', parse: (res) => res.json() },
+      { name: 'AllOrigins Raw Proxy', url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(RENFE_FEED_URL), parse: (res) => res.json() },
+      { name: 'CORSProxy.io', url: 'https://corsproxy.io/?' + encodeURIComponent(RENFE_FEED_URL), parse: (res) => res.json() },
+      { name: 'Directo (Renfe API)', url: RENFE_FEED_URL, parse: (res) => res.json() }
+    ];
+
+    const STATIONS_MAP = {
+      '17000': 'Madrid Chamartín Clara Campoamor',
+      '18000': 'Madrid Puerta de Atocha Almudena Grandes',
+      '60000': 'Madrid Puerta de Atocha',
+      '71801': 'Barcelona Sants',
+      '79202': 'Barcelona França',
+      '60911': 'València Joaquín Sorolla',
+      '60900': 'València Nord',
+      '51003': 'Sevilla Santa Justa',
+      '04000': 'Málaga María Zambrano',
+      '02003': 'Córdoba Central',
+      '31205': 'Zaragoza Delicias',
+      '35000': 'Alicante / Alacant Terminal',
+      '03208': 'Cuenca Fernando Zóbel',
+      '03216': 'Requena-Utiel',
+      '01009': 'Antequera Santa Ana',
+      '65300': 'Castelló de la Plana',
+      '11200': 'Valladolid Campo Grande',
+      '14223': 'Segovia Guiomar',
+      '15200': 'Palencia',
+      '15410': 'León',
+      '16000': 'Burgos Rosa Manzano',
+      '81100': 'Bilbao Abando Indalecio Prieto',
+      '31400': 'Lleida Pirineus',
+      '79400': 'Girona',
+      '79500': 'Figueres-Vilafant',
+      '21000': 'Ourense',
+      '22000': 'Santiago de Compostela',
+      '23000': 'A Coruña',
+      '24000': 'Vigo Guixar',
+      '16600': 'Donostia / San Sebastián',
+      '61303': 'Murcia del Carmen'
+    };
+
+    let map = null;
+    let markersMap = new Map();
+    let trainsData = [];
+    let currentCategory = 'ALL';
+    let currentTab = 'supervision';
+    let selectedTrainId = null;
+    let activeSourceIndex = 0;
+    let secondsUntilNextPoll = 15;
+    let isFetching = false;
+    let eventLogs = [];
+
+    // --- LOGGING TELEMETRÍA ---
+    function addEventLog(type, message) {
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+      const log = { time: timeStr, type, message };
+      eventLogs.unshift(log);
+      if (eventLogs.length > 80) eventLogs.pop();
+      renderEventLogs();
+    }
+
+    function clearEventLogs() {
+      eventLogs = [];
+      renderEventLogs();
+    }
+
+    function renderEventLogs() {
+      const container = document.getElementById('terminal-log-container');
+      if (!container) return;
+      if (eventLogs.length === 0) {
+        container.innerHTML = `<span class="text-on-surface-variant/50">Consola lista. Esperando eventos de tráfico...</span>`;
+        return;
+      }
+
+      container.innerHTML = eventLogs.map(l => {
+        let colorClass = 'text-on-surface-variant';
+        let badge = 'INFO';
+        if (l.type === 'sync') { colorClass = 'text-primary'; badge = 'SYNC'; }
+        if (l.type === 'warn') { colorClass = 'text-secondary'; badge = 'WARN'; }
+        if (l.type === 'alert') { colorClass = 'text-error'; badge = 'ALERTA'; }
+        if (l.type === 'nav') { colorClass = 'text-primary-fixed-dim'; badge = 'CTC'; }
+
+        return `
+          <div class="flex items-start gap-2 hover:bg-surface-container/30 px-1 py-0.5 rounded">
+            <span class="text-[#5C6672] shrink-0">[${l.time}]</span>
+            <span class="px-1.5 py-0.2 rounded text-[10px] font-bold ${colorClass} bg-surface-container-high/60 shrink-0">${badge}</span>
+            <span class="text-on-surface break-words">${l.message}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- CAMBIO DE PESTAÑAS (SUPERVISIÓN, FLOTA, ENRUTAMIENTO, INCIDENCIAS, REGISTRO) ---
+    window.switchTab = function(tabName) {
+      currentTab = tabName;
+
+      // Actualizar botones del menú lateral
+      document.querySelectorAll('#main-nav .nav-item').forEach(btn => {
+        const isTarget = btn.getAttribute('data-tab') === tabName;
+        if (isTarget) {
+          btn.className = 'nav-item flex items-center gap-space-md px-space-md py-space-sm rounded-lg bg-surface-container-high text-primary font-bold shadow-sm transition-colors text-left w-full';
+        } else {
+          btn.className = 'nav-item flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors text-left w-full';
+        }
+      });
+
+      // Actualizar enlaces de la barra superior
+      document.querySelectorAll('.top-nav-btn').forEach(btn => {
+        const isTarget = btn.getAttribute('data-tab') === tabName;
+        btn.className = isTarget 
+          ? 'top-nav-btn font-label-md text-label-md text-primary font-bold'
+          : 'top-nav-btn font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors';
+      });
+
+      // Mostrar el panel seleccionado y ocultar los demás
+      document.querySelectorAll('.view-panel').forEach(panel => {
+        panel.classList.add('hidden');
+      });
+
+      const targetPanel = document.getElementById(`view-${tabName}`);
+      if (targetPanel) {
+        targetPanel.classList.remove('hidden');
+        if (tabName === 'supervision') targetPanel.classList.add('grid');
+        else targetPanel.classList.add('flex');
+      }
+
+      addEventLog('nav', `Operador CTC abrió la vista: ${tabName.toUpperCase()}`);
+
+      // Si volvemos a la supervisión, recalcular mapa Leaflet
+      if (tabName === 'supervision' && map) {
+        setTimeout(() => map.invalidateSize(), 80);
+      } else if (tabName === 'flota') {
+        renderFlotaTable();
+      } else if (tabName === 'enrutamiento') {
+        renderCorridors();
+      } else if (tabName === 'incidencias') {
+        renderIncidencias();
+      }
+    };
+
+    // --- INICIALIZACIÓN DEL MAPA LEAFLET ---
+    function initMap() {
+      const spainCenter = [40.2085, -3.7130];
+      const initialZoom = 6;
+
+      map = L.map('leaflet-map', {
+        zoomControl: false,
+        attributionControl: true,
+        minZoom: 5,
+        maxZoom: 18
+      }).setView(spainCenter, initialZoom);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        subdomains: ['a', 'b', 'c'],
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors | Renfe GTFS-RT'
+      }).addTo(map);
+
+      map.on('click', () => {
+        selectedTrainId = null;
+        updateSelectedMarkerStyles();
+        highlightCardInList(null);
+      });
+    }
+
+    // --- CLASIFICACIÓN DE TREN ---
+    function classifyTrain(vehicleId) {
+      const idStr = String(vehicleId || '').trim();
+      const num = parseInt(idStr, 10) || 0;
+
+      if (idStr.startsWith('06') || (num >= 6000 && num <= 6999)) {
+        return { type: 'Avlo', category: 'AVLO', color: '#c084fc', series: 'S-112 Avlo', displayName: `Avlo ${idStr}` };
+      }
+      if (idStr.startsWith('08') || (num >= 8000 && num <= 8999)) {
+        return { type: 'Avant', category: 'AVANT', color: '#38bdf8', series: 'S-104 / S-114', displayName: `Avant ${idStr}` };
+      }
+      if (idStr.startsWith('04') || idStr.startsWith('13') || idStr.startsWith('14') || idStr.startsWith('15')) {
+        return { type: 'Alvia', category: 'ALVIA', color: '#ffbd58', series: 'S-120 / S-130', displayName: `Alvia ${idStr}` };
+      }
+      if (idStr.startsWith('01') || idStr.startsWith('11')) {
+        return { type: 'Euromed', category: 'EUROMED', color: '#2dd4bf', series: 'S-130 Euromed', displayName: `Euromed ${idStr}` };
+      }
+      return { type: 'AVE', category: 'AVE', color: '#00e599', series: 'S-103 / S-102', displayName: `AVE ${idStr}` };
+    }
+
+    // --- DIV ICON LEAFLET ---
+    function buildTrainDivIcon(train, isSelected) {
+      const isMoving = train.status === 'IN_TRANSIT_TO';
+      const beaconClass = isMoving ? 'bg-primary' : 'bg-secondary';
+      const statusPillClass = isMoving ? '' : 'stopped';
+      const selectedClass = isSelected ? 'selected' : '';
+      const iconSymbol = isMoving ? 'train' : 'pause_circle';
+
+      const html = `
+        <div class="train-marker-pill ${statusPillClass} ${selectedClass}" data-train-id="${train.id}">
+          <span class="train-beacon-pulse">
+            ${isMoving ? `<span class="ping ${beaconClass}"></span>` : ''}
+            <span class="dot ${beaconClass}"></span>
+          </span>
+          <span class="material-symbols-outlined text-[13px] text-on-surface-variant">${iconSymbol}</span>
+          <span class="tracking-tight">${train.displayName}</span>
+        </div>
+      `;
+
+      return L.divIcon({
+        className: 'custom-train-div-icon',
+        html: html,
+        iconSize: [110, 28],
+        iconAnchor: [55, 14],
+        popupAnchor: [0, -18]
+      });
+    }
+
+    function buildTrainPopupContent(train) {
+      const isMoving = train.status === 'IN_TRANSIT_TO';
+      const statusLabel = isMoving ? 'EN RUTA' : 'DETENIDO EN ESTACIÓN';
+      const statusColor = isMoving ? '#00e599' : '#ffbd58';
+      const stationName = STATIONS_MAP[train.stopId] || (train.stopId ? `Estación Adif #${train.stopId}` : 'En trayecto libre');
+
+      return `
+        <div class="p-3 bg-[#1d1f27] text-[#e2e2ec] font-['Geist'] text-xs min-w-[240px]">
+          <div class="flex items-center justify-between border-b border-[#33343c] pb-2 mb-2">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[18px]" style="color:${train.color};">train</span>
+              <span class="font-['Space_Grotesk'] text-sm font-bold text-white tracking-tight">${train.displayName}</span>
+            </div>
+            <span class="px-2 py-0.5 rounded font-['JetBrains_Mono'] text-[10px] font-bold" style="background:${statusColor}22; color:${statusColor}; border:1px solid ${statusColor}44;">
+              ${statusLabel}
+            </span>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-2 mb-2 font-['JetBrains_Mono'] text-[11px]">
+            <div class="bg-[#11131a] p-1.5 rounded">
+              <span class="text-[#849589] block text-[9px] uppercase">Serie / Material</span>
+              <span class="font-bold text-white">${train.series}</span>
+            </div>
+            <div class="bg-[#11131a] p-1.5 rounded">
+              <span class="text-[#849589] block text-[9px] uppercase">Estado Vía</span>
+              <span class="font-bold text-primary">${isMoving ? 'Cantón Libre' : 'Parada Asignada'}</span>
+            </div>
+          </div>
+
+          <div class="mb-2 bg-[#11131a] p-1.5 rounded flex items-start gap-1.5">
+            <span class="material-symbols-outlined text-[15px] text-[#ffbd58] shrink-0 mt-0.5">location_on</span>
+            <div class="flex flex-col">
+              <span class="text-[#849589] text-[9px] uppercase">Próximo Enclavamiento / Parada</span>
+              <span class="font-medium text-white text-[11px] leading-tight">${stationName}</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-1 border-t border-[#282a31] font-['JetBrains_Mono'] text-[10px] text-[#849589]">
+            <span>COORD: ${train.lat.toFixed(4)}, ${train.lng.toFixed(4)}</span>
+            <span class="text-primary font-semibold">GSM-R OK</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- DESCARGA DE DATOS ---
+    async function fetchRenfeData() {
+      if (isFetching) return;
+      isFetching = true;
+
+      const refreshIcon = document.getElementById('refresh-icon');
+      if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+      const startTime = performance.now();
+      let rawData = null;
+      let usedSourceName = '';
+
+      const count = DATA_SOURCES.length;
+      for (let i = 0; i < count; i++) {
+        const idx = (activeSourceIndex + i) % count;
+        const source = DATA_SOURCES[idx];
+
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+          const response = await fetch(source.url, {
+            signal: controller.signal,
+            cache: 'no-store'
+          });
+          clearTimeout(timeoutId);
+
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+          const parsed = await source.parse(response);
+
+          if (parsed && Array.isArray(parsed.entity)) {
+            rawData = parsed;
+            activeSourceIndex = idx;
+            usedSourceName = source.name;
+            break;
+          }
+        } catch (err) {
+          // continuar con siguiente candidato
+        }
+      }
+
+      const elapsedMs = Math.round(performance.now() - startTime);
+      if (refreshIcon) {
+        setTimeout(() => refreshIcon.classList.remove('animate-spin'), 500);
+      }
+      isFetching = false;
+
+      const latencyBadge = document.getElementById('api-latency-badge');
+      const apiStatusBadge = document.getElementById('api-status-badge');
+      const activeProxyBadge = document.getElementById('active-proxy-name');
+
+      if (rawData) {
+        if (latencyBadge) latencyBadge.textContent = `${elapsedMs}ms`;
+        if (apiStatusBadge) {
+          apiStatusBadge.textContent = 'ACTIVO';
+          apiStatusBadge.className = 'text-primary font-bold';
+        }
+        if (activeProxyBadge) activeProxyBadge.textContent = usedSourceName;
+
+        processTrainsFeed(rawData.entity);
+        addEventLog('sync', `Sincronización completada vía [${usedSourceName}]: ${trainsData.length} trenes activos (${elapsedMs}ms)`);
+      } else {
+        if (apiStatusBadge) {
+          apiStatusBadge.textContent = 'REINTENTANDO';
+          apiStatusBadge.className = 'text-secondary font-bold';
+        }
+        if (activeProxyBadge) activeProxyBadge.textContent = 'Reintentando fuentes...';
+        addEventLog('warn', `Fallo al sincronizar con fuentes disponibles. Reintentando en 15s.`);
+      }
+
+      secondsUntilNextPoll = 15;
+    }
+
+    // --- PROCESADO DE DATOS ---
+    function processTrainsFeed(entityList) {
+      if (!Array.isArray(entityList)) return;
+
+      const seenIds = new Set();
+      const processed = [];
+
+      for (const ent of entityList) {
+        const veh = ent.vehicle;
+        if (!veh || !veh.position || veh.position.latitude == null || veh.position.longitude == null) {
+          continue;
+        }
+
+        const trainId = veh.vehicle?.id || veh.trip?.tripId || ent.id;
+        if (!trainId || seenIds.has(trainId)) continue;
+        seenIds.add(trainId);
+
+        const classification = classifyTrain(trainId);
+
+        processed.push({
+          id: trainId,
+          displayName: classification.displayName,
+          type: classification.type,
+          category: classification.category,
+          color: classification.color,
+          series: classification.series,
+          lat: Number(veh.position.latitude),
+          lng: Number(veh.position.longitude),
+          status: veh.currentStatus || 'IN_TRANSIT_TO',
+          stopId: veh.stopId || null,
+          tripId: veh.trip?.tripId || null,
+          updatedAt: Date.now()
+        });
+      }
+
+      trainsData = processed;
+
+      renderMarkersOnMap();
+      renderStatsAndFilters();
+      renderTrainsSidebarList();
+
+      // Actualizar vista activa secundaria si corresponde
+      if (currentTab === 'flota') renderFlotaTable();
+      if (currentTab === 'enrutamiento') renderCorridors();
+      if (currentTab === 'incidencias') renderIncidencias();
+    }
+
+    // --- MARCADORES MAPA ---
+    function renderMarkersOnMap() {
+      if (!map) return;
+
+      const filteredTrains = trainsData.filter(t => currentCategory === 'ALL' || t.category === currentCategory);
+      const activeIds = new Set(filteredTrains.map(t => t.id));
+
+      for (const [id, marker] of markersMap.entries()) {
+        if (!activeIds.has(id)) {
+          map.removeLayer(marker);
+          markersMap.delete(id);
+        }
+      }
+
+      for (const train of filteredTrains) {
+        const isSelected = (train.id === selectedTrainId);
+
+        if (markersMap.has(train.id)) {
+          const marker = markersMap.get(train.id);
+          marker.setLatLng([train.lat, train.lng]);
+          marker.setIcon(buildTrainDivIcon(train, isSelected));
+          marker.setPopupContent(buildTrainPopupContent(train));
+        } else {
+          const marker = L.marker([train.lat, train.lng], {
+            icon: buildTrainDivIcon(train, isSelected),
+            title: train.displayName
+          });
+
+          marker.bindPopup(buildTrainPopupContent(train), {
+            maxWidth: 280,
+            autoPan: true
+          });
+
+          marker.on('click', () => {
+            selectTrain(train.id, false);
+          });
+
+          marker.addTo(map);
+          markersMap.set(train.id, marker);
+        }
+      }
+
+      const legendMapCount = document.getElementById('legend-map-count');
+      if (legendMapCount) legendMapCount.textContent = filteredTrains.length;
+    }
+
+    function updateSelectedMarkerStyles() {
+      for (const [id, marker] of markersMap.entries()) {
+        const train = trainsData.find(t => t.id === id);
+        if (train) {
+          const isSelected = (train.id === selectedTrainId);
+          marker.setIcon(buildTrainDivIcon(train, isSelected));
+        }
+      }
+    }
+
+    // --- ESTADÍSTICAS GLOBALES ---
+    function renderStatsAndFilters() {
+      const total = trainsData.length;
+      let moving = 0;
+      let stopped = 0;
+
+      const categoryCounts = { ALL: total, AVE: 0, AVLO: 0, AVANT: 0, ALVIA: 0, EUROMED: 0 };
+
+      for (const t of trainsData) {
+        if (t.status === 'IN_TRANSIT_TO') moving++;
+        else stopped++;
+
+        if (categoryCounts[t.category] !== undefined) {
+          categoryCounts[t.category]++;
+        }
+      }
+
+      const headerCounter = document.getElementById('train-counter-header');
+      if (headerCounter) headerCounter.textContent = `${total} trenes en circulación`;
+
+      const totalCirculatingBadge = document.getElementById('total-circulating-badge');
+      if (totalCirculatingBadge) totalCirculatingBadge.textContent = `${total} DETECTADOS`;
+
+      const statMovingCount = document.getElementById('stat-moving-count');
+      const statMovingPct = document.getElementById('stat-moving-pct');
+      const statStoppedCount = document.getElementById('stat-stopped-count');
+      const statStoppedPct = document.getElementById('stat-stopped-pct');
+      const statRatioText = document.getElementById('stat-ratio-text');
+      const barMoving = document.getElementById('bar-moving');
+      const barStopped = document.getElementById('bar-stopped');
+
+      const movingPct = total > 0 ? Math.round((moving / total) * 100) : 0;
+      const stoppedPct = total > 0 ? (100 - movingPct) : 0;
+
+      if (statMovingCount) statMovingCount.textContent = moving;
+      if (statMovingPct) statMovingPct.textContent = `${movingPct}% en ruta`;
+      if (statStoppedCount) statStoppedCount.textContent = stopped;
+      if (statStoppedPct) statStoppedPct.textContent = `${stoppedPct}% detenidos`;
+      if (statRatioText) statRatioText.textContent = `${movingPct}% / ${stoppedPct}%`;
+
+      if (barMoving) barMoving.style.width = `${movingPct}%`;
+      if (barStopped) barStopped.style.width = `${stoppedPct}%`;
+
+      document.getElementById('cnt-all').textContent = categoryCounts.ALL;
+      document.getElementById('cnt-ave').textContent = categoryCounts.AVE;
+      document.getElementById('cnt-avlo').textContent = categoryCounts.AVLO;
+      document.getElementById('cnt-avant').textContent = categoryCounts.AVANT;
+      document.getElementById('cnt-alvia').textContent = categoryCounts.ALVIA;
+      document.getElementById('cnt-euromed').textContent = categoryCounts.EUROMED;
+    }
+
+    // --- LISTA LATERAL (SUPERVISIÓN) ---
+    function renderTrainsSidebarList() {
+      const container = document.getElementById('trains-feed-container');
+      const feedShowingCount = document.getElementById('feed-showing-count');
+      if (!container) return;
+
+      const filtered = trainsData.filter(t => currentCategory === 'ALL' || t.category === currentCategory);
+      if (feedShowingCount) feedShowingCount.textContent = `${filtered.length} visibles`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="p-6 text-center text-on-surface-variant font-code-sm bg-surface-container rounded-xl">
+            No se han detectado trenes para la categoría seleccionada.
+          </div>
+        `;
+        return;
+      }
+
+      const sorted = [...filtered].sort((a, b) => {
+        if (a.status === 'IN_TRANSIT_TO' && b.status !== 'IN_TRANSIT_TO') return -1;
+        if (a.status !== 'IN_TRANSIT_TO' && b.status === 'IN_TRANSIT_TO') return 1;
+        return a.displayName.localeCompare(b.displayName);
+      });
+
+      let html = '';
+      for (const train of sorted) {
+        const isMoving = train.status === 'IN_TRANSIT_TO';
+        const isSelected = (train.id === selectedTrainId);
+        const statusText = isMoving ? 'En marcha' : 'En estación';
+        const statusBadgeBg = isMoving ? 'bg-primary-container/20 text-primary' : 'bg-secondary-container/20 text-secondary';
+        const pulseBeacon = isMoving ? 'bg-primary animate-pulse' : 'bg-secondary';
+        const borderHighlight = isSelected ? 'ring-2 ring-primary border-primary bg-surface-container-high' : 'border-surface-container-high/30';
+        const stationName = STATIONS_MAP[train.stopId] || (train.stopId ? `Cantón Adif #${train.stopId}` : 'Trayecto Abierto');
+
+        html += `
+          <article 
+            id="train-card-${train.id}"
+            class="bg-surface-container p-space-md rounded-xl shadow-md hover:bg-surface-bright transition-all cursor-pointer group border ${borderHighlight}"
+            onclick="selectTrain('${train.id}', true)">
+            
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-surface-container-high font-headline-sm text-headline-sm font-bold text-on-surface group-hover:text-primary transition-colors">
+                  ${train.displayName}
+                </span>
+                <span class="font-code-sm text-code-sm text-on-surface-variant">${train.series}</span>
+              </div>
+              <span class="px-2 py-0.5 rounded-full font-code-sm text-code-sm font-bold ${statusBadgeBg} flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full ${pulseBeacon}"></span>
+                ${statusText}
+              </span>
+            </div>
+
+            <div class="mt-2 flex items-center text-on-surface font-body-md text-body-md font-medium truncate">
+              <span class="material-symbols-outlined text-[16px] text-primary mr-1.5 shrink-0">train</span>
+              <span class="truncate text-on-surface-variant">${stationName}</span>
+            </div>
+
+            <div class="mt-3 pt-2 bg-surface-container-lowest/60 rounded-lg px-2.5 py-1.5 flex items-center justify-between font-code-sm text-code-sm border border-surface-container-high/20">
+              <div class="flex items-center gap-1 text-on-surface-variant">
+                <span class="material-symbols-outlined text-[15px] text-primary">${isMoving ? 'speed' : 'pause'}</span>
+                <span class="text-on-surface font-semibold">${isMoving ? 'En ruta' : 'Parado'}</span>
+              </div>
+              <div class="flex items-center gap-1 text-on-surface-variant">
+                <span>Cat:</span>
+                <span class="text-primary font-bold">${train.category}</span>
+              </div>
+              <div class="text-on-surface-variant font-mono">
+                GPS: <span class="text-on-surface font-semibold">${train.lat.toFixed(2)}, ${train.lng.toFixed(2)}</span>
+              </div>
+            </div>
+
+          </article>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    // --- ACCIÓN AL SELECCIONAR TREN ---
+    window.selectTrain = function(trainId, flyToCoord = true) {
+      selectedTrainId = trainId;
+      const train = trainsData.find(t => t.id === trainId);
+      if (!train) return;
+
+      updateSelectedMarkerStyles();
+
+      if (markersMap.has(trainId)) {
+        const marker = markersMap.get(trainId);
+        marker.openPopup();
+
+        if (flyToCoord && map) {
+          map.flyTo([train.lat, train.lng], 11, { duration: 1.2 });
+        }
+      }
+
+      highlightCardInList(trainId);
+    };
+
+    window.focusTrainOnMap = function(trainId) {
+      switchTab('supervision');
+      setTimeout(() => {
+        selectTrain(trainId, true);
+      }, 150);
+    };
+
+    function highlightCardInList(trainId) {
+      document.querySelectorAll('#trains-feed-container article').forEach(el => {
+        el.classList.remove('ring-2', 'ring-primary', 'border-primary', 'bg-surface-container-high');
+        el.classList.add('border-surface-container-high/30');
+      });
+
+      if (trainId) {
+        const activeCard = document.getElementById(`train-card-${trainId}`);
+        if (activeCard) {
+          activeCard.classList.remove('border-surface-container-high/30');
+          activeCard.classList.add('ring-2', 'ring-primary', 'border-primary', 'bg-surface-container-high');
+          activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    }
+
+    // --- PESTAÑA: TABLA DE FLOTA Y TELEMETRÍA ---
+    function renderFlotaTable() {
+      const tbody = document.getElementById('flota-table-body');
+      const badge = document.getElementById('flota-total-badge');
+      const searchInput = document.getElementById('flota-search-input');
+      if (!tbody) return;
+
+      const query = (searchInput?.value || '').toLowerCase().trim();
+      const filtered = trainsData.filter(t => {
+        if (!query) return true;
+        const station = (STATIONS_MAP[t.stopId] || '').toLowerCase();
+        return t.displayName.toLowerCase().includes(query) ||
+               t.series.toLowerCase().includes(query) ||
+               station.includes(query) ||
+               t.category.toLowerCase().includes(query);
+      });
+
+      if (badge) badge.textContent = `${filtered.length} de ${trainsData.length} Trenes`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-on-surface-variant font-code-sm">No se encontraron trenes que coincidan con la búsqueda.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(t => {
+        const isMoving = t.status === 'IN_TRANSIT_TO';
+        const station = STATIONS_MAP[t.stopId] || (t.stopId ? `Cantón #${t.stopId}` : 'Trayecto Libre');
+        const statusBadge = isMoving 
+          ? `<span class="px-2 py-0.5 rounded-full bg-primary/15 text-primary font-bold inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> En Ruta</span>`
+          : `<span class="px-2 py-0.5 rounded-full bg-secondary/15 text-secondary font-bold inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> En Estación</span>`;
+
+        return `
+          <tr class="hover:bg-surface-container/60 transition-colors">
+            <td class="py-3 px-4 font-bold text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]" style="color:${t.color}">train</span>
+              ${t.displayName}
+            </td>
+            <td class="py-3 px-4 text-on-surface-variant">${t.series}</td>
+            <td class="py-3 px-4">${statusBadge}</td>
+            <td class="py-3 px-4 text-white">${station}</td>
+            <td class="py-3 px-4 text-on-surface-variant font-mono">${t.lat.toFixed(4)}, ${t.lng.toFixed(4)}</td>
+            <td class="py-3 px-4 text-right">
+              <button onclick="focusTrainOnMap('${t.id}')" class="px-2.5 py-1 bg-surface-container hover:bg-primary hover:text-on-primary rounded text-xs font-bold transition-all border border-surface-container-high/60 inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[13px]">map</span> Centrar
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // --- PESTAÑA: ENRUTAMIENTO Y CORREDORES ---
+    function renderCorridors() {
+      const container = document.getElementById('corridors-container');
+      if (!container) return;
+
+      // 5 Corredores de Alta Velocidad principales
+      const CORRIDORS = [
+        {
+          id: 'nordeste',
+          name: 'Corredor Nordeste (LAV Madrid - Barcelona - Figueres)',
+          stops: ['18000', '60000', '31205', '31400', '71801', '79202', '79400', '79500'],
+          maxSpeed: '310 km/h',
+          system: 'ERTMS L2 / ETCS'
+        },
+        {
+          id: 'levante',
+          name: 'Corredor Levante (LAV Madrid - Cuenca - València / Alicante)',
+          stops: ['18000', '03208', '03216', '60911', '60900', '35000', '61303', '65300'],
+          maxSpeed: '300 km/h',
+          system: 'ERTMS L2 / ASFA Digital'
+        },
+        {
+          id: 'sur',
+          name: 'Corredor Sur (LAV Madrid - Córdoba - Sevilla / Málaga / Granada)',
+          stops: ['18000', '02003', '51003', '04000', '01009'],
+          maxSpeed: '300 km/h',
+          system: 'LZB / ERTMS L1'
+        },
+        {
+          id: 'norte',
+          name: 'Corredor Norte (LAV Madrid - Segovia - Valladolid - León / Asturias)',
+          stops: ['17000', '14223', '11200', '15200', '15410', '16000', '81100', '16600'],
+          maxSpeed: '300 km/h',
+          system: 'ERTMS L2'
+        },
+        {
+          id: 'galicia',
+          name: 'Corredor Noroeste (LAV Madrid - Zamora - Ourense - Santiago - Coruña)',
+          stops: ['17000', '14223', '21000', '22000', '23000', '24000'],
+          maxSpeed: '300 km/h',
+          system: 'ERTMS L2'
+        }
+      ];
+
+      container.innerHTML = CORRIDORS.map(corridor => {
+        // Asignar trenes según su próxima parada o coincidencia de corredor
+        const assignedTrains = trainsData.filter(t => corridor.stops.includes(t.stopId));
+        const movingCount = assignedTrains.filter(t => t.status === 'IN_TRANSIT_TO').length;
+
+        return `
+          <div class="bg-surface-container-low rounded-xl border border-surface-container-high/40 p-space-md shadow-lg flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 uppercase font-code-sm">
+                  ${corridor.system}
+                </span>
+                <span class="font-code-sm text-xs font-bold text-white">${corridor.maxSpeed}</span>
+              </div>
+              <h3 class="font-headline-sm font-bold text-on-surface leading-tight mb-2">${corridor.name}</h3>
+              <div class="flex items-center gap-2 mb-4 font-code-sm text-xs text-on-surface-variant">
+                <span>Trenes en sección: <strong class="text-primary font-bold">${assignedTrains.length}</strong></span>
+                <span>·</span>
+                <span>En marcha: <strong class="text-white">${movingCount}</strong></span>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-surface-container-high/30">
+              <span class="font-label-sm text-on-surface-variant block mb-2 uppercase">Unidades en cantón:</span>
+              <div class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto ctc-scrollbar">
+                ${assignedTrains.length > 0 
+                  ? assignedTrains.map(t => `
+                      <span onclick="focusTrainOnMap('${t.id}')" class="cursor-pointer px-2 py-1 bg-surface-container hover:bg-surface-bright rounded text-[11px] font-bold font-mono text-white border border-surface-container-high transition-all" title="Ver en mapa">
+                        ${t.displayName}
+                      </span>
+                    `).join('')
+                  : `<span class="text-xs text-on-surface-variant/60 font-code-sm">Sin unidades detectadas en este cantón.</span>`
+                }
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- PESTAÑA: INCIDENCIAS ---
+    function renderIncidencias() {
+      const stoppedEl = document.getElementById('incidencias-stopped-count');
+      const activeEl = document.getElementById('incidencias-active-count');
+      const listContainer = document.getElementById('incidencias-list-container');
+      if (!listContainer) return;
+
+      const stoppedTrains = trainsData.filter(t => t.status !== 'IN_TRANSIT_TO');
+      const movingTrains = trainsData.filter(t => t.status === 'IN_TRANSIT_TO');
+
+      if (stoppedEl) stoppedEl.textContent = stoppedTrains.length;
+      if (activeEl) activeEl.textContent = movingTrains.length;
+
+      if (stoppedTrains.length === 0) {
+        listContainer.innerHTML = `
+          <div class="p-6 text-center text-primary font-code-sm bg-surface-container rounded-xl">
+            Todos los trenes de la malla se encuentran actualmente en movimiento normal sin retenciones.
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = stoppedTrains.map(t => {
+        const station = STATIONS_MAP[t.stopId] || (t.stopId ? `Cantón #${t.stopId}` : 'Parada Asignada');
+        return `
+          <div class="p-3 bg-surface-container rounded-lg border border-surface-container-high/40 flex items-center justify-between hover:bg-surface-bright transition-colors">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-secondary text-[22px]">pause_circle</span>
+              <div class="flex flex-col">
+                <div class="flex items-center gap-2">
+                  <span class="font-headline-sm font-bold text-white text-sm">${t.displayName}</span>
+                  <span class="px-2 py-0.2 rounded text-[10px] bg-secondary/15 text-secondary font-bold font-mono uppercase">Detenido</span>
+                </div>
+                <span class="font-code-sm text-xs text-on-surface-variant">Ubicación: <strong class="text-white">${station}</strong></span>
+              </div>
+            </div>
+            <button onclick="focusTrainOnMap('${t.id}')" class="px-3 py-1 bg-surface-container-high hover:bg-primary hover:text-on-primary rounded text-xs font-bold font-code-sm transition-all border border-surface-container-high">
+              Localizar
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- INICIALIZACIÓN DE EVENTOS Y CONTROLES ---
+    function setupAppEvents() {
+      // Filtros de categoría en supervisión
+      document.querySelectorAll('#service-filters .filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#service-filters .filter-btn').forEach(b => {
+            b.className = 'filter-btn px-3 py-1 rounded-full font-code-sm text-code-sm font-semibold transition-all bg-surface-container-high text-on-surface-variant hover:text-on-surface hover:bg-surface-bright';
+          });
+          btn.className = 'filter-btn active px-3 py-1 rounded-full font-code-sm text-code-sm font-semibold transition-all bg-primary text-on-primary shadow-sm';
+
+          currentCategory = btn.getAttribute('data-category') || 'ALL';
+          renderMarkersOnMap();
+          renderTrainsSidebarList();
+        });
+      });
+
+      // Navegación lateral
+      document.querySelectorAll('#main-nav .nav-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.getAttribute('data-tab');
+          if (tab) switchTab(tab);
+        });
+      });
+
+      // Navegación superior
+      document.querySelectorAll('.top-nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.getAttribute('data-tab');
+          if (tab) switchTab(tab);
+        });
+      });
+
+      // Buscador de flota
+      const searchInput = document.getElementById('flota-search-input');
+      if (searchInput) {
+        searchInput.addEventListener('input', () => {
+          renderFlotaTable();
+        });
+      }
+
+      // HUD Zoom & Refresh
+      const btnZoomIn = document.getElementById('btn-zoom-in');
+      const btnZoomOut = document.getElementById('btn-zoom-out');
+      const btnRefresh = document.getElementById('btn-refresh');
+      const btnFullscreen = document.getElementById('btn-fullscreen');
+
+      if (btnZoomIn) btnZoomIn.addEventListener('click', () => map && map.zoomIn());
+      if (btnZoomOut) btnZoomOut.addEventListener('click', () => map && map.zoomOut());
+      if (btnRefresh) btnRefresh.addEventListener('click', () => fetchRenfeData());
+      if (btnFullscreen) {
+        btnFullscreen.addEventListener('click', () => {
+          if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+          else if (document.exitFullscreen) document.exitFullscreen();
+        });
+      }
+    }
+
+    // --- TEMPORIZADORES ---
+    function startTimers() {
+      const clockEl = document.getElementById('ctc-clock');
+      const dateEl = document.getElementById('ctc-date');
+      const countdownBadge = document.getElementById('countdown-badge');
+
+      setInterval(() => {
+        const now = new Date();
+        if (clockEl) {
+          const hours = String(now.getHours()).padStart(2, '0');
+          const mins = String(now.getMinutes()).padStart(2, '0');
+          const secs = String(now.getSeconds()).padStart(2, '0');
+          clockEl.innerHTML = `${hours}:${mins}:${secs} <span class="font-code-sm text-code-sm text-on-surface-variant font-normal">UTC+1</span>`;
+        }
+        if (dateEl) {
+          const options = { day: 'numeric', month: 'short', year: 'numeric' };
+          dateEl.textContent = now.toLocaleDateString('es-ES', options).toUpperCase();
+        }
+
+        if (secondsUntilNextPoll > 1) {
+          secondsUntilNextPoll--;
+        } else {
+          secondsUntilNextPoll = 15;
+          fetchRenfeData();
+        }
+
+        if (countdownBadge) countdownBadge.textContent = `${secondsUntilNextPoll}s`;
+      }, 1000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initMap();
+      setupAppEvents();
+      startTimers();
+      addEventLog('info', 'Consola CTC Vía Libre iniciada.');
+      fetchRenfeData();
+    });
+  </script>
+
+</body>
+</html>
