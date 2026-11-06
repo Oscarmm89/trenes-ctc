@@ -540,7 +540,7 @@
 
         <!-- Botón Audio Táctico -->
         <button id="btn-sound-toggle" onclick="toggleSound()" class="p-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-colors" title="Sonido CTC (Megafonía)">
-          <span id="sound-icon" class="material-symbols-outlined text-[20px]">volume_up</span>
+          <span id="sound-icon" class="material-symbols-outlined text-[20px]">volume_off</span>
         </button>
 
         <!-- Botón Modo Claro / Oscuro (Sol / Luna) -->
@@ -1008,44 +1008,75 @@
   <!-- JAVASCRIPT: LÓGICA COMPLETA DEL SISTEMA    -->
   <!-- ========================================== -->
   <script>
-    // --- ESTACIONES OFICIALES DE ESPAÑA (CASITAS 🏠) ---
+        // --- ESTACIONES OFICIALES, TERMINALES Y TALLERES FERROVIARIOS DE ESPAÑA ---
     const STATIONS_GEO = {
-      '17000': { name: 'Madrid Chamartín Clara Campoamor', lat: 40.4720, lng: -3.6825, city: 'Madrid', type: 'terminal' },
-      '18000': { name: 'Madrid Puerta de Atocha Almudena Grandes', lat: 40.4065, lng: -3.6903, city: 'Madrid', type: 'terminal' },
-      '60000': { name: 'Madrid Puerta de Atocha', lat: 40.4065, lng: -3.6903, city: 'Madrid', type: 'terminal' },
-      '71801': { name: 'Barcelona Sants', lat: 41.3790, lng: 2.1400, city: 'Barcelona', type: 'terminal' },
-      '79202': { name: 'Barcelona França', lat: 41.3842, lng: 2.1872, city: 'Barcelona', type: 'terminal' },
-      '60911': { name: 'València Joaquín Sorolla', lat: 39.4589, lng: -0.3807, city: 'Valencia', type: 'terminal' },
-      '60900': { name: 'València Nord', lat: 39.4667, lng: -0.3772, city: 'Valencia', type: 'terminal' },
-      '51003': { name: 'Sevilla Santa Justa', lat: 37.3917, lng: -5.9753, city: 'Sevilla', type: 'terminal' },
-      '04000': { name: 'Málaga María Zambrano', lat: 36.7118, lng: -4.4326, city: 'Málaga', type: 'terminal' },
-      '54413': { name: 'Málaga María Zambrano', lat: 36.7118, lng: -4.4326, city: 'Málaga', type: 'terminal' },
-      '02003': { name: 'Córdoba Central', lat: 37.8887, lng: -4.7898, city: 'Córdoba', type: 'station' },
-      '70600': { name: 'Zaragoza Delicias', lat: 41.6589, lng: -0.9125, city: 'Zaragoza', type: 'station' },
-      '31205': { name: 'Zaragoza Delicias', lat: 41.6589, lng: -0.9125, city: 'Zaragoza', type: 'station' },
-      '35000': { name: 'Alicante Terminal', lat: 38.3444, lng: -0.4950, city: 'Alicante', type: 'terminal' },
-      '60905': { name: 'Alicante Terminal', lat: 38.3444, lng: -0.4950, city: 'Alicante', type: 'terminal' },
-      '03208': { name: 'Cuenca Fernando Zóbel', lat: 40.0381, lng: -2.1497, city: 'Cuenca', type: 'station' },
-      '03216': { name: 'Requena-Utiel', lat: 39.4975, lng: -1.1342, city: 'Requena', type: 'station' },
-      '01009': { name: 'Antequera Santa Ana', lat: 37.0706, lng: -4.7170, city: 'Antequera', type: 'station' },
-      '65300': { name: 'Castelló de la Plana', lat: 39.9880, lng: -0.0525, city: 'Castellón', type: 'station' },
-      '11200': { name: 'Valladolid Campo Grande', lat: 41.6425, lng: -4.7297, city: 'Valladolid', type: 'station' },
-      '14100': { name: 'Palencia', lat: 42.0150, lng: -4.5340, city: 'Palencia', type: 'station' },
-      '14223': { name: 'Segovia Guiomar', lat: 40.9083, lng: -4.0994, city: 'Segovia', type: 'station' },
-      '15100': { name: 'León', lat: 42.5975, lng: -5.5828, city: 'León', type: 'terminal' },
-      '15211': { name: 'Oviedo', lat: 43.3667, lng: -5.8522, city: 'Oviedo', type: 'terminal' },
-      '16000': { name: 'Burgos Rosa Manzano', lat: 42.3686, lng: -3.6692, city: 'Burgos', type: 'station' },
-      '31400': { name: 'Lleida Pirineus', lat: 41.6214, lng: 0.6322, city: 'Lleida', type: 'station' },
-      '71500': { name: 'Camp de Tarragona', lat: 41.1925, lng: 1.2561, city: 'Tarragona', type: 'station' },
-      '79300': { name: 'Girona', lat: 41.9792, lng: 2.8172, city: 'Girona', type: 'station' },
-      '79500': { name: 'Figueres-Vilafant', lat: 42.2661, lng: 2.9469, city: 'Figueres', type: 'terminal' },
-      '21000': { name: 'Ourense', lat: 42.3486, lng: -7.8697, city: 'Ourense', type: 'station' },
-      '31412': { name: 'Santiago de Compostela', lat: 42.8711, lng: -8.5444, city: 'Santiago', type: 'terminal' },
-      '23000': { name: 'A Coruña', lat: 43.3528, lng: -8.4111, city: 'A Coruña', type: 'terminal' },
-      '61303': { name: 'Murcia del Carmen', lat: 37.9744, lng: -1.1306, city: 'Murcia', type: 'terminal' },
-      '60600': { name: 'Albacete Los Llanos', lat: 38.9994, lng: -1.8497, city: 'Albacete', type: 'station' },
-      '37000': { name: 'Ciudad Real Central', lat: 38.9897, lng: -3.9189, city: 'Ciudad Real', type: 'station' },
-      '37100': { name: 'Puertollano', lat: 38.6908, lng: -4.1083, city: 'Puertollano', type: 'station' }
+      // Madrid Hub (Atocha, Chamartín, Cerro Negro talleres, Fuencarral talleres, Santa Catalina)
+      '18000': { name: 'Madrid Puerta de Atocha Almudena Grandes', lat: 40.4065, lng: -3.6903, city: 'Madrid', type: 'terminal', radiusKm: 6.5 },
+      '60000': { name: 'Madrid Puerta de Atocha', lat: 40.4065, lng: -3.6903, city: 'Madrid', type: 'terminal', radiusKm: 6.5 },
+      '17000': { name: 'Madrid Chamartín Clara Campoamor', lat: 40.4720, lng: -3.6825, city: 'Madrid', type: 'terminal', radiusKm: 6.0 },
+      'DEP_CERRO_NEGRO': { name: 'Talleres AVE Cerro Negro (Madrid)', lat: 40.3880, lng: -3.6700, city: 'Madrid', type: 'depot', radiusKm: 5.5 },
+      'DEP_FUENCARRAL': { name: 'Talleres AVE Fuencarral (Madrid)', lat: 40.4950, lng: -3.6850, city: 'Madrid', type: 'depot', radiusKm: 5.5 },
+      'DEP_STA_CATALINA': { name: 'Complejo Ferroviario Santa Catalina', lat: 40.3750, lng: -3.6600, city: 'Madrid', type: 'depot', radiusKm: 5.0 },
+
+      // Barcelona Hub (Sants, Can Tunis talleres, França, Sant Andreu Comtal, El Prat)
+      '71801': { name: 'Barcelona Sants', lat: 41.3790, lng: 2.1400, city: 'Barcelona', type: 'terminal', radiusKm: 6.5 },
+      'DEP_CAN_TUNIS': { name: 'Talleres AVE Can Tunis (Barcelona)', lat: 41.3500, lng: 2.1300, city: 'Barcelona', type: 'depot', radiusKm: 6.0 },
+      '79202': { name: 'Barcelona França', lat: 41.3842, lng: 2.1872, city: 'Barcelona', type: 'terminal', radiusKm: 4.5 },
+      '78800': { name: 'Barcelona Sant Andreu Comtal / La Sagrera', lat: 41.4350, lng: 2.1900, city: 'Barcelona', type: 'station', radiusKm: 5.0 },
+
+      // Corredor Sur (Sevilla, Málaga, Córdoba, Granada, Antequera)
+      '51003': { name: 'Sevilla Santa Justa / La Negrilla Talleres', lat: 37.3917, lng: -5.9753, city: 'Sevilla', type: 'terminal', radiusKm: 5.5 },
+      '51110': { name: 'Sevilla Santa Justa', lat: 37.3917, lng: -5.9753, city: 'Sevilla', type: 'terminal', radiusKm: 5.5 },
+      '04000': { name: 'Málaga María Zambrano / Los Prados Talleres', lat: 36.7118, lng: -4.4326, city: 'Málaga', type: 'terminal', radiusKm: 5.5 },
+      '54413': { name: 'Málaga María Zambrano', lat: 36.7118, lng: -4.4326, city: 'Málaga', type: 'terminal', radiusKm: 5.5 },
+      '02003': { name: 'Córdoba Central', lat: 37.8887, lng: -4.7898, city: 'Córdoba', type: 'station', radiusKm: 4.0 },
+      '01009': { name: 'Antequera Santa Ana', lat: 37.0706, lng: -4.7170, city: 'Antequera', type: 'station', radiusKm: 4.5 },
+      '05000': { name: 'Granada', lat: 37.1840, lng: -3.6080, city: 'Granada', type: 'station', radiusKm: 4.0 },
+      '37000': { name: 'Ciudad Real Central', lat: 38.9897, lng: -3.9189, city: 'Ciudad Real', type: 'station', radiusKm: 4.0 },
+      '37100': { name: 'Puertollano', lat: 38.6908, lng: -4.1083, city: 'Puertollano', type: 'station', radiusKm: 4.0 },
+      'DEP_LA_SAGRA': { name: 'Base Mantenimiento AVE La Sagra (Toledo)', lat: 39.9500, lng: -3.9000, city: 'La Sagra', type: 'depot', radiusKm: 5.0 },
+
+      // Corredor Levante (Valencia, Alicante, Cuenca, Albacete, Requena, Murcia)
+      '60911': { name: 'València Joaquín Sorolla / Font de Sant Lluís', lat: 39.4589, lng: -0.3807, city: 'Valencia', type: 'terminal', radiusKm: 5.5 },
+      '60900': { name: 'València Nord', lat: 39.4667, lng: -0.3772, city: 'Valencia', type: 'terminal', radiusKm: 5.0 },
+      '35000': { name: 'Alicante Terminal', lat: 38.3444, lng: -0.4950, city: 'Alicante', type: 'terminal', radiusKm: 4.5 },
+      '60905': { name: 'Alicante Terminal', lat: 38.3444, lng: -0.4950, city: 'Alicante', type: 'terminal', radiusKm: 4.5 },
+      '03208': { name: 'Cuenca Fernando Zóbel', lat: 40.0381, lng: -2.1497, city: 'Cuenca', type: 'station', radiusKm: 4.0 },
+      '03216': { name: 'Requena-Utiel', lat: 39.4975, lng: -1.1342, city: 'Requena', type: 'station', radiusKm: 4.0 },
+      '60600': { name: 'Albacete Los Llanos', lat: 38.9994, lng: -1.8497, city: 'Albacete', type: 'station', radiusKm: 4.0 },
+      '61303': { name: 'Murcia del Carmen', lat: 37.9744, lng: -1.1306, city: 'Murcia', type: 'terminal', radiusKm: 4.5 },
+      '61304': { name: 'Cartagena', lat: 37.6050, lng: -0.9740, city: 'Cartagena', type: 'terminal', radiusKm: 4.0 },
+      '03410': { name: 'Villena Alta Velocidad', lat: 38.5750, lng: -0.8710, city: 'Villena', type: 'station', radiusKm: 4.0 },
+      '65300': { name: 'Castelló de la Plana', lat: 39.9880, lng: -0.0525, city: 'Castellón', type: 'station', radiusKm: 4.0 },
+
+      // Corredor Noreste (Zaragoza, Tarragona, Lleida, Girona, Figueres)
+      '70600': { name: 'Zaragoza Delicias / Plaza Complejo Ferroviario', lat: 41.6589, lng: -0.9125, city: 'Zaragoza', type: 'station', radiusKm: 5.5 },
+      '31205': { name: 'Zaragoza Delicias', lat: 41.6589, lng: -0.9125, city: 'Zaragoza', type: 'station', radiusKm: 5.5 },
+      '71500': { name: 'Camp de Tarragona', lat: 41.1925, lng: 1.2561, city: 'Tarragona', type: 'station', radiusKm: 4.0 },
+      '71502': { name: 'Camp de Tarragona', lat: 41.1925, lng: 1.2561, city: 'Tarragona', type: 'station', radiusKm: 4.0 },
+      '31400': { name: 'Lleida Pirineus', lat: 41.6214, lng: 0.6322, city: 'Lleida', type: 'station', radiusKm: 4.0 },
+      '79300': { name: 'Girona', lat: 41.9792, lng: 2.8172, city: 'Girona', type: 'station', radiusKm: 4.0 },
+      '79500': { name: 'Figueres-Vilafant', lat: 42.2661, lng: 2.9469, city: 'Figueres', type: 'terminal', radiusKm: 4.0 },
+
+      // Corredor Norte y Noroeste (Valladolid, Burgos, León, Segovia, Galicia, Asturias)
+      '11200': { name: 'Valladolid Campo Grande / Talleres Nuevo Complejo', lat: 41.6425, lng: -4.7297, city: 'Valladolid', type: 'station', radiusKm: 5.5 },
+      '14223': { name: 'Segovia Guiomar', lat: 40.9083, lng: -4.0994, city: 'Segovia', type: 'station', radiusKm: 4.0 },
+      '14100': { name: 'Palencia', lat: 42.0150, lng: -4.5340, city: 'Palencia', type: 'station', radiusKm: 4.0 },
+      '15100': { name: 'León', lat: 42.5975, lng: -5.5828, city: 'León', type: 'terminal', radiusKm: 4.5 },
+      '16000': { name: 'Burgos Rosa Manzano', lat: 42.3686, lng: -3.6692, city: 'Burgos', type: 'station', radiusKm: 4.0 },
+      '15211': { name: 'Oviedo', lat: 43.3667, lng: -5.8522, city: 'Oviedo', type: 'terminal', radiusKm: 4.5 },
+      '21000': { name: 'Ourense', lat: 42.3486, lng: -7.8697, city: 'Ourense', type: 'station', radiusKm: 4.0 },
+      '31412': { name: 'Santiago de Compostela', lat: 42.8711, lng: -8.5444, city: 'Santiago', type: 'terminal', radiusKm: 4.5 },
+      '23000': { name: 'A Coruña', lat: 43.3528, lng: -8.4111, city: 'A Coruña', type: 'terminal', radiusKm: 4.5 },
+      '22100': { name: 'Vigo Urzáiz / Guixar', lat: 42.2350, lng: -8.7150, city: 'Vigo', type: 'terminal', radiusKm: 4.5 },
+      '08240': { name: 'Zamora', lat: 41.5160, lng: -5.7420, city: 'Zamora', type: 'station', radiusKm: 4.0 },
+      '30200': { name: 'Medina del Campo Alta Velocidad', lat: 41.3140, lng: -4.9150, city: 'Medina del Campo', type: 'station', radiusKm: 4.0 },
+      '04040': { name: 'Calatayud', lat: 41.3480, lng: -1.6380, city: 'Calatayud', type: 'station', radiusKm: 4.0 },
+      '71401': { name: 'Reus / Cambrils', lat: 41.1400, lng: 1.1000, city: 'Tarragona', type: 'station', radiusKm: 4.0 },
+      '71700': { name: 'Sant Vicenç de Calders / Vilanova', lat: 41.1850, lng: 1.5240, city: 'Tarragona', type: 'station', radiusKm: 4.5 },
+      '78400': { name: 'Casetas / Utebo', lat: 41.7100, lng: -0.9900, city: 'Zaragoza', type: 'station', radiusKm: 4.0 },
+      '50500': { name: 'Lora del Río / Marchena', lat: 37.6500, lng: -5.5000, city: 'Sevilla', type: 'station', radiusKm: 4.0 },
+      '54403': { name: 'Álora / Pizarra', lat: 36.8200, lng: -4.7000, city: 'Málaga', type: 'station', radiusKm: 4.0 }
     };
 
     // --- COORDENADAS OFICIALES DE LAS LÍNEAS DE ALTA VELOCIDAD (LAV ADIF) ---
@@ -1158,7 +1189,7 @@
     let activeSourceIndex = 0;
     let secondsUntilNextPoll = 15;
     let isFetching = false;
-    let isSoundEnabled = true;
+    let isSoundEnabled = false;
     let isDarkMode = true;
     let eventLogs = [];
 
@@ -1218,7 +1249,7 @@
     // --- SONIDO TÁCTICO CTC (WEB AUDIO API) ---
     let audioCtx = null;
     function initSound() {
-      isSoundEnabled = (localStorage.getItem('ctc_sound') !== 'false');
+      isSoundEnabled = (localStorage.getItem('ctc_sound') === 'true');
       updateSoundIcon();
     }
 
@@ -1302,10 +1333,10 @@
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | Adif / Renfe'
       }).addTo(map);
 
-      // 1. Dibujar Vías Férreas de Alta Velocidad (LAV)
-      drawRailwayTracks();
+      // 1. Capa Oficial OpenRailwayMap (trazado centimétrico exacto de curvas, vías y estaciones)
+      initRailwayMapLayer();
 
-      // 2. Dibujar Estaciones (🏠)
+      // 2. Dibujar Estaciones principales (🏠)
       drawStationMarkers();
 
       map.on('click', (e) => {
@@ -1315,39 +1346,36 @@
       });
     }
 
-    // DIBUJAR VÍAS FÉRREAS EN EL MAPA
-    function drawRailwayTracks() {
-      for (const cor of RAILWAY_CORRIDORS) {
-        // Línea base oscura / exterior
-        const casing = L.polyline(cor.coords, {
-          color: '#000000',
-          weight: 4.5,
-          opacity: 0.5,
-          lineCap: 'round',
-          interactive: false
-        }).addTo(map);
+    // CAPA VECTORIAL EXACTA: OPENRAILWAYMAP (Curvatura real, vías, agujas y andenes)
+    let openRailwayMapLayer = null;
 
-        // Línea de color de vía
-        const track = L.polyline(cor.coords, {
-          color: cor.color,
-          weight: 2.2,
-          opacity: 0.85,
-          dashArray: '8, 6',
-          lineCap: 'round',
-          interactive: true
-        }).addTo(map);
+    function initRailwayMapLayer() {
+      openRailwayMapLayer = L.tileLayer('https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        subdomains: ['a', 'b', 'c'],
+        opacity: 0.88,
+        attribution: 'Vías: &copy; <a href="https://www.OpenRailwayMap.org" target="_blank">OpenRailwayMap</a>'
+      });
 
-        track.bindTooltip(`<b>${cor.name}</b>`, { sticky: true });
-        railwayTracksLayers.push(casing, track);
+      if (showTracks && map) {
+        openRailwayMapLayer.addTo(map);
       }
     }
 
     function toggleTracksBtn() {
       showTracks = !showTracks;
-      railwayTracksLayers.forEach(l => {
-        if (showTracks) map.addLayer(l);
-        else map.removeLayer(l);
-      });
+      toggleRailwayTracks(showTracks);
+    }
+
+    function toggleRailwayTracks(checked) {
+      showTracks = checked;
+      if (openRailwayMapLayer && map) {
+        if (showTracks) map.addLayer(openRailwayMapLayer);
+        else map.removeLayer(openRailwayMapLayer);
+      }
+      const chk = document.getElementById('toggle-tracks-checkbox');
+      if (chk) chk.checked = showTracks;
+
       const btn = document.getElementById('btn-toggle-tracks');
       if (btn) {
         btn.classList.toggle('bg-primary/20', showTracks);
@@ -1355,14 +1383,6 @@
         btn.classList.toggle('bg-surface-container-high', !showTracks);
         btn.classList.toggle('text-on-surface-variant', !showTracks);
       }
-    }
-
-    function toggleRailwayTracks(checked) {
-      showTracks = checked;
-      railwayTracksLayers.forEach(l => {
-        if (showTracks) map.addLayer(l);
-        else map.removeLayer(l);
-      });
     }
 
     // DIBUJAR MARCADORES DE ESTACIONES (CASITA 🏠)
@@ -1622,21 +1642,30 @@
 
         previousPositions.set(trainId, { lat, lng, time: now });
 
-        // --- SISTEMA ANTIFALSOS POSITIVOS (5 CICLOS CONSECUTIVOS PARADO) ---
-        const isMomentaryStopped = (veh.currentStatus !== 'IN_TRANSIT_TO' || speedKmH < 10);
+        // --- CLASIFICACIÓN DE ENTORNO FERROVIARIO (ESTACIÓN / TALLER / PLENA VÍA) ---
+        const nearestHub = nearestStation;
+        const distToHub = nearestHub ? nearestHub.distKm : 999;
+        const hubRadius = (nearestHub && nearestHub.radiusKm) ? nearestHub.radiusKm : 4.0;
+        
+        // Un tren está en estación/taller si Renfe lo marca como STOPPED_AT o está dentro del radio del nodo
+        const isStationOrDepotZone = (veh.currentStatus === 'STOPPED_AT' || distToHub <= hubRadius);
+
+        // Contador de ciclos detenido (para evitar saltos transitorios de GPS)
+        const isSpeedStationary = (speedKmH < 12);
         let consecutiveStopped = stoppedCycleCounters.get(trainId) || 0;
 
-        if (isMomentaryStopped) {
+        if (isSpeedStationary || veh.currentStatus === 'STOPPED_AT') {
           consecutiveStopped += 1;
         } else {
           consecutiveStopped = 0;
         }
         stoppedCycleCounters.set(trainId, consecutiveStopped);
 
-        // SOLO SE CONFIRMA PARADA SI LLEVA AL MENOS 5 CICLOS (75s) DETENIDO
         const isConfirmedStopped = consecutiveStopped >= 5;
-        const isStoppedOnTrack = isConfirmedStopped && !isNearStation; // ¡DETENIDO EN PLENA VÍA REAL!
-        const isStoppedInStation = isConfirmedStopped && isNearStation;
+
+        // ¡INCIDENCIA EN PLENA VÍA SOLO SI ESTÁ LEJOS DE CUALQUIER ESTACIÓN O TALLER Y LLEVA 5+ CICLOS!
+        const isStoppedOnTrack = isConfirmedStopped && !isStationOrDepotZone && veh.currentStatus === 'IN_TRANSIT_TO' && distToHub > 4.5;
+        const isStoppedInStation = isConfirmedStopped && isStationOrDepotZone;
 
         const routeData = inferTrainRoute(trainId, lat, lng, veh.stopId, prevPos?.lat, prevPos?.lng);
 
@@ -1654,6 +1683,8 @@
           isStopped: isConfirmedStopped,
           isStoppedOnTrack,
           isStoppedInStation,
+          isStationOrDepotZone,
+          nearestHub,
           nearestStation,
           distToStation,
           stopId: veh.stopId,
@@ -1808,16 +1839,19 @@
     let activeSafetyCriticalPair = null;
 
     function checkSafetyProximity() {
-      const stoppedOnTrack = trainsData.filter(t => t.isStoppedOnTrack);
-      const movingTrains = trainsData.filter(t => !t.isStopped);
+      // SOLO trenes detenidos REALMENTE en plena vía (fuera de estaciones y talleres)
+      const stoppedOnTrack = trainsData.filter(t => t.isStoppedOnTrack && !t.isStationOrDepotZone);
+      // Trenes en marcha a alta velocidad en línea abierta
+      const fastMovingTrains = trainsData.filter(t => !t.isStopped && t.speed > 70 && !t.isStationOrDepotZone);
 
       let criticalPair = null;
 
-      // 1. Prioridad: tren en marcha acercándose a uno detenido en plena vía (< 8 km)
+      // Un tren acercándose a alta velocidad a otro detenido en plena vía abierta (> 4.5 km de estaciones)
       for (const stopped of stoppedOnTrack) {
-        for (const moving of movingTrains) {
+        for (const moving of fastMovingTrains) {
+          if (stopped.id === moving.id) continue;
           const dist = haversineKm(stopped.lat, stopped.lng, moving.lat, moving.lng);
-          if (dist > 0.1 && dist < 8.0) {
+          if (dist > 0.2 && dist < 6.5) {
             criticalPair = { train1: stopped, train2: moving, dist, type: 'stopped_ahead' };
             break;
           }
@@ -1825,35 +1859,12 @@
         if (criticalPair) break;
       }
 
-      // 2. Verificación secundaria: dos trenes de alta velocidad circulando a menos de 4.5 km
-      if (!criticalPair) {
-        for (let i = 0; i < movingTrains.length; i++) {
-          for (let j = i + 1; j < movingTrains.length; j++) {
-            const tA = movingTrains[i];
-            const tB = movingTrains[j];
-            if (tA.route.corridor === tB.route.corridor && tA.speed > 80 && tB.speed > 80) {
-              const d = haversineKm(tA.lat, tA.lng, tB.lat, tB.lng);
-              if (d > 0.1 && d < 4.5) {
-                criticalPair = { train1: tA, train2: tB, dist: d, type: 'close_running' };
-                break;
-              }
-            }
-          }
-          if (criticalPair) break;
-        }
-      }
-
       activeSafetyCriticalPair = criticalPair;
       const banner = document.getElementById('safety-alert-banner');
       const bannerText = document.getElementById('safety-alert-text');
 
       if (criticalPair) {
-        let msg = '';
-        if (criticalPair.type === 'stopped_ahead') {
-          msg = `⚠️ ASFA CRÍTICO: Tren ${criticalPair.train2.displayName} a ${criticalPair.dist.toFixed(1)} km del ${criticalPair.train1.displayName} detenido en plena vía.`;
-        } else {
-          msg = `⚠️ RADAR CANTÓN REDUCIDO: ${criticalPair.train1.displayName} y ${criticalPair.train2.displayName} a ${criticalPair.dist.toFixed(1)} km en línea ${criticalPair.train1.route.corridor}.`;
-        }
+        const msg = `⚠️ ASFA PLENA VÍA: ${criticalPair.train2.displayName} (${criticalPair.train2.speed} km/h) a ${criticalPair.dist.toFixed(1)} km del ${criticalPair.train1.displayName} detenido en vía abierta.`;
 
         if (bannerText) bannerText.textContent = msg;
         if (banner) banner.classList.remove('hidden');
@@ -1867,8 +1878,6 @@
             opacity: 0.95
           }).addTo(map);
         }
-
-        playChime('alert');
       } else {
         if (banner) banner.classList.add('hidden');
         if (safetyLineLayer && map) {
@@ -2044,12 +2053,19 @@
     }
 
     // ENVÍO DE NOTIFICACIONES (TOAST + BROWSER PUSH)
-    function sendNotification(title, body) {
+    function sendNotification(title, body, isFavoriteEvent = true) {
+      // Solo notificar si es un evento de un tren favorito o una acción directa del usuario
+      if (!isFavoriteEvent) return;
+
       // 1. Toast en pantalla
       showToast(`<b>${title}:</b> ${body}`);
-      playChime('chime');
+      
+      // Sonido solo si el usuario lo tiene activado expresamente en ajustes
+      if (isSoundEnabled) {
+        playChime('chime');
+      }
 
-      // 2. Notificación del sistema operativo / móvil si tiene permiso
+      // 2. Notificación del sistema operativo si se concedió permiso
       if ('Notification' in window && Notification.permission === 'granted') {
         try {
           new Notification(title, { body, icon: '/favicon.ico' });
@@ -2137,10 +2153,11 @@
 
       if (train.isStoppedOnTrack) {
         punctualityEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-danger animate-pulse"></span> <span class="text-danger">DETENCIÓN EN PLENA VÍA</span>`;
-        statusTextEl.textContent = 'Alerta ASFA activa';
-      } else if (train.isStoppedInStation) {
-        punctualityEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-secondary"></span> <span class="text-secondary">En Estación</span>`;
-        statusTextEl.textContent = 'Embarque reglamentario';
+        statusTextEl.textContent = 'Parada prolongada fuera de andén';
+      } else if (train.isStationOrDepotZone || train.isStoppedInStation) {
+        const hubName = train.nearestStation ? train.nearestStation.city : 'Estación';
+        punctualityEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-[#38bdf8]"></span> <span class="text-[#38bdf8]">Estacionado en ${hubName}</span>`;
+        statusTextEl.textContent = 'Andén / Zona de mantenimiento';
       } else {
         const delayStr = train.delayMinutes === 0 ? 'En Hora (+0m)' : `+${train.delayMinutes}m Demora`;
         punctualityEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-primary"></span> <span class="text-primary">${delayStr}</span>`;
@@ -2332,8 +2349,8 @@
         const isFav = favoriteTrains.has(train.id);
         const statusBadge = train.isStoppedOnTrack 
           ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-danger/20 text-danger border border-danger/30">PARADO EN VÍA</span>`
-          : (train.isStoppedInStation 
-            ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary/20 text-secondary">Estación</span>` 
+          : ((train.isStationOrDepotZone || train.isStoppedInStation) 
+            ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#38bdf8]/20 text-[#38bdf8]">Estación/Taller</span>` 
             : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary">${train.speed} km/h</span>`);
 
         const borderStyle = isSelected ? 'border-primary ring-1 ring-primary bg-surface-container-high' : 'border-border';
@@ -2367,14 +2384,18 @@
 
       for (const t of trainsData) {
         if (t.isStoppedOnTrack) stoppedTrack++;
-        else if (t.isStoppedInStation) stoppedStation++;
+        else if (t.isStationOrDepotZone || t.isStoppedInStation) stoppedStation++;
         else moving++;
 
         if (catCounts[t.category] !== undefined) catCounts[t.category]++;
       }
 
       const inlineStats = document.getElementById('trains-stats-inline');
-      if (inlineStats) inlineStats.textContent = `${moving} en marcha | ${stoppedStation + stoppedTrack} parados`;
+      if (inlineStats) {
+        inlineStats.textContent = stoppedTrack > 0 
+          ? `${moving} en marcha | ${stoppedStation} en andén | ${stoppedTrack} en vía` 
+          : `${moving} en marcha | ${stoppedStation} en estación/taller`;
+      }
 
       const sidebarCount = document.getElementById('sidebar-trains-count');
       if (sidebarCount) sidebarCount.textContent = total;
