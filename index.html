@@ -26,7 +26,7 @@
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
+    <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
@@ -56,143 +56,11 @@
         }
       }
     };
-
-    // --- VARIABLES Y COMPROBACIÓN DE TREN EN URL (COMPARTIR VIAJE) ---
-    let autoSelectTrainOnLoad = null;
-    let hasAppliedInitialTrain = false;
-    let deferredPwaPrompt = null;
-
-    (function checkUrlParams() {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const t = params.get('train') || params.get('tren') || params.get('id');
-        if (t) autoSelectTrainOnLoad = t.trim().toLowerCase();
-      } catch (e) {}
-
-      // Manejador de instalación PWA
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPwaPrompt = e;
-        const btn = document.getElementById('pwa-native-install-btn');
-        if (btn) btn.classList.remove('hidden');
-      });
-    })();
-
-    // --- COMPARTIR VIAJE EN DIRECTO (WHATSAPP, TELEGRAM, COPIAR) ---
-    function openShareModal() {
-      if (!selectedTrainId) return;
-      const train = trainsData.find(t => t.id === selectedTrainId);
-      if (!train) return;
-
-      const origin = window.location.origin || '';
-      const pathname = window.location.pathname || '';
-      const shareUrl = `${origin}${pathname}?train=${encodeURIComponent(train.id)}`;
-
-      const input = document.getElementById('share-url-input');
-      if (input) input.value = shareUrl;
-
-      const sub = document.getElementById('share-modal-subtitle');
-      if (sub) sub.textContent = `${train.displayName} (${train.route.origin} ➔ ${train.route.destination})`;
-
-      const nativeBtn = document.getElementById('btn-native-share');
-      if (nativeBtn) {
-        if (navigator.share) nativeBtn.classList.remove('hidden');
-        else nativeBtn.classList.add('hidden');
-      }
-
-      document.getElementById('share-modal-backdrop').classList.remove('hidden');
-      playChime('blip');
-    }
-
-    function closeShareModal() {
-      document.getElementById('share-modal-backdrop').classList.add('hidden');
-    }
-
-    function copyShareLink() {
-      const input = document.getElementById('share-url-input');
-      if (!input) return;
-
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(input.value).then(() => {
-          showToast('✅ ¡Enlace copiado al portapapeles!');
-          playChime('chime');
-        }).catch(() => fallbackCopy(input));
-      } else {
-        fallbackCopy(input);
-      }
-    }
-
-    function fallbackCopy(input) {
-      input.select();
-      input.setSelectionRange(0, 99999);
-      document.execCommand('copy');
-      showToast('✅ ¡Enlace copiado al portapapeles!');
-      playChime('chime');
-    }
-
-    function shareViaWhatsApp() {
-      if (!selectedTrainId) return;
-      const train = trainsData.find(t => t.id === selectedTrainId);
-      if (!train) return;
-      const input = document.getElementById('share-url-input');
-      const url = input ? input.value : window.location.href;
-
-      const text = `🚄 ¡Sigue mi tren ${train.displayName} en tiempo real!\n📍 Recorrido: ${train.route.origin} ➔ ${train.route.destination}\n⚡ Velocidad: ${train.speed} km/h\nEnlace en directo: ${url}`;
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
-    }
-
-    function shareViaTelegram() {
-      if (!selectedTrainId) return;
-      const train = trainsData.find(t => t.id === selectedTrainId);
-      if (!train) return;
-      const input = document.getElementById('share-url-input');
-      const url = input ? input.value : window.location.href;
-
-      const text = `🚄 Sigue mi tren ${train.displayName} (${train.route.origin} ➔ ${train.route.destination}) en tiempo real:`;
-      window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
-    }
-
-    function shareViaNative() {
-      if (!selectedTrainId || !navigator.share) return;
-      const train = trainsData.find(t => t.id === selectedTrainId);
-      if (!train) return;
-      const input = document.getElementById('share-url-input');
-      const url = input ? input.value : window.location.href;
-
-      navigator.share({
-        title: `Seguimiento en vivo: ${train.displayName}`,
-        text: `Sigue el avance del ${train.displayName} (${train.route.origin} ➔ ${train.route.destination}) en tiempo real:`,
-        url: url
-      }).catch(() => {});
-    }
-
-    // --- INSTALACIÓN PWA (MODAL DE INSTRUCCIONES) ---
-    function openInstallModal() {
-      document.getElementById('install-modal-backdrop').classList.remove('hidden');
-      playChime('blip');
-    }
-
-    function closeInstallModal() {
-      document.getElementById('install-modal-backdrop').classList.add('hidden');
-    }
-
-    function triggerPwaPrompt() {
-      if (deferredPwaPrompt) {
-        deferredPwaPrompt.prompt();
-        deferredPwaPrompt.userChoice.then((choice) => {
-          if (choice.outcome === 'accepted') {
-            showToast('🎉 ¡Gracias por instalar Vía Libre CTC!');
-          }
-          deferredPwaPrompt = null;
-          closeInstallModal();
-        });
-      }
-    }
   </script>
 
   <style>
     /* VARIABLES DE TEMA: MODO OSCURO (CTC TÁCTICO) POR DEFECTO */
-    :root {
+    :root, html.dark, body.dark {
       --color-primary: #00e599;
       --color-primary-container: #00e599;
       --color-on-primary: #003822;
@@ -211,8 +79,8 @@
       --map-bg: #0c0e15;
     }
 
-    /* MODO CLARO (ADIF / ALTA VISIBILIDAD DE DÍA) */
-    body.light-theme {
+    /* MODO CLARO (ALTA VISIBILIDAD DE DÍA) */
+    html.light, body.light-theme, html:not(.dark) body.light-theme {
       --color-primary: #047857;
       --color-primary-container: #10b981;
       --color-on-primary: #ffffff;
@@ -230,178 +98,6 @@
       --color-danger: #dc2626;
       --map-bg: #e2e8f0;
     }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overscroll-behavior-y: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    ::-webkit-scrollbar { display: none; }
-    .ctc-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; display: block; }
-    .ctc-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .ctc-scrollbar::-webkit-scrollbar-thumb { background: var(--color-surface-container-high); border-radius: 9999px; }
-
-    /* LEAFLET ADAPTATIVO */
-    #leaflet-map {
-      width: 100%;
-      height: 100%;
-      background-color: var(--map-bg);
-      z-index: 10;
-    }
-    .leaflet-container {
-      background-color: var(--map-bg) !important;
-      font-family: 'Geist', sans-serif;
-    }
-
-    /* En Modo Oscuro invertimos las teselas para estética militar/CTC */
-    .leaflet-tile-pane {
-      filter: invert(100%) hue-rotate(180deg) brightness(82%) contrast(118%) grayscale(25%);
-      transition: filter 0.3s ease;
-    }
-    /* En Modo Claro teselas 100% naturales a color */
-    body.light-theme .leaflet-tile-pane {
-      filter: none !important;
-    }
-
-    /* Popups Leaflet */
-    .leaflet-popup-content-wrapper {
-      background: var(--color-surface-container) !important;
-      color: var(--color-on-surface) !important;
-      border: 1px solid var(--color-border) !important;
-      border-radius: 12px !important;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45) !important;
-      padding: 0 !important;
-      overflow: hidden;
-    }
-    .leaflet-popup-content { margin: 0 !important; line-height: 1.4 !important; }
-    .leaflet-popup-tip { background: var(--color-surface-container) !important; }
-    .leaflet-popup-close-button { color: var(--color-on-surface-variant) !important; top: 8px !important; right: 8px !important; font-size: 16px !important; }
-
-    /* MARCADORES COMPACTOS DE TRENES (LIMPIEZA TÁCTICA SIN SOLAPAMIENTOS) */
-    .train-tactical-marker {
-      width: 24px;
-      height: 24px;
-      border-radius: 9999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(17, 19, 26, 0.94);
-      border: 2px solid var(--marker-color, #00e599);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
-      color: #ffffff;
-      cursor: pointer;
-      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
-      position: relative;
-    }
-    body.light-theme .train-tactical-marker {
-      background: #ffffff;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    }
-    .train-tactical-marker:hover,
-    .train-tactical-marker.selected {
-      transform: scale(1.4);
-      z-index: 1000 !important;
-      box-shadow: 0 0 18px var(--marker-color, #00e599);
-    }
-    .train-tactical-marker.danger-stop {
-      border-color: #ff334b !important;
-      animation: pulse-danger-marker 1.4s infinite;
-    }
-    @keyframes pulse-danger-marker {
-      0%, 100% { box-shadow: 0 0 0 rgba(255, 51, 75, 0.6); }
-      50% { box-shadow: 0 0 18px rgba(255, 51, 75, 1); transform: scale(1.25); }
-    }
-    .train-tactical-marker.is-fav::after {
-      content: '❤️';
-      position: absolute;
-      top: -10px;
-      right: -8px;
-      font-size: 11px;
-    }
-
-    /* MARCADOR DE ESTACIÓN (CASITA / ICONO FERROVIARIO) */
-    .station-marker-pill {
-      background: rgba(22, 24, 32, 0.88);
-      border: 1px solid rgba(142, 148, 160, 0.4);
-      border-radius: 6px;
-      padding: 2px 5px;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
-      font-weight: 700;
-      color: #cbd5e1;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-      white-space: nowrap;
-      cursor: pointer;
-      transition: transform 0.15s ease;
-    }
-    body.light-theme .station-marker-pill {
-      background: rgba(255, 255, 255, 0.92);
-      border-color: #94a3b8;
-      color: #1e293b;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    }
-    .station-marker-pill:hover {
-      transform: scale(1.15);
-      border-color: #00e599;
-      color: #00e599;
-      z-index: 900 !important;
-    }
-
-    /* Animaciones Bottom Sheet */
-    #bottom-sheet {
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    #bottom-sheet.closed {
-      transform: translateY(105%);
-    }
-
-    /* Toasts de Notificaciones */
-    #notification-toast-container {
-      position: fixed;
-      top: 70px;
-      right: 16px;
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      pointer-events: none;
-    }
-    .toast-msg {
-      pointer-events: auto;
-      background: rgba(17, 19, 26, 0.95);
-      border: 1px solid var(--color-primary);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-      color: #ffffff;
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-family: 'Geist', sans-serif;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      animation: slide-in-toast 0.3s ease-out;
-    }
-    body.light-theme .toast-msg {
-      background: #ffffff;
-      color: #0f172a;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    }
-    @keyframes slide-in-toast {
-      from { transform: translateX(110%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-
-    /* Mobile Safe Area Padding */
-    .safe-pb {
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-  </style>
 </head>
 
 <body class="bg-surface font-body text-on-surface antialiased h-full flex flex-col selection:bg-primary selection:text-on-primary">
@@ -557,22 +253,7 @@
       </div>
     </header>
 
-    <!-- BANNER DE ALERTA DE ALCANCE / SEGURIDAD RADAR -->
-    <div id="safety-alert-banner" class="hidden bg-danger text-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-code font-bold z-30 flex items-center justify-between shadow-lg">
-      <div class="flex items-center gap-2 truncate">
-        <span class="material-symbols-outlined text-[20px] animate-pulse shrink-0">warning</span>
-        <span id="safety-alert-text" class="truncate">ALERTA ASFA: Distancia de cantón reducida</span>
-      </div>
-      <div class="flex items-center gap-2 shrink-0">
-        <button id="safety-zoom-btn" onclick="zoomToSafetyCriticalPair()" class="px-2.5 py-1 rounded-lg bg-white text-danger hover:bg-white/90 text-xs font-bold flex items-center gap-1 shadow transition-all">
-          <span class="material-symbols-outlined text-[15px]">my_location</span>
-          <span>Ver en Mapa</span>
-        </button>
-        <button onclick="dismissSafetyAlert()" class="p-1 hover:bg-white/20 rounded" title="Descartar">
-          <span class="material-symbols-outlined text-[18px]">close</span>
-        </button>
-      </div>
-    </div>
+    
 
     <!-- CONTENEDOR PRINCIPAL DE PANTALLAS -->
     <main class="flex-1 relative overflow-hidden bg-surface flex flex-col">
@@ -671,11 +352,14 @@
             </button>
           </div>
 
-          <!-- LEYENDA FLOTANTE INFERIOR DERECHA -->
-          <div class="absolute bottom-20 sm:bottom-4 right-3 z-20 pointer-events-auto bg-surface-container/90 backdrop-blur-md px-3 py-2 rounded-xl border border-border shadow-lg font-code text-[10px] hidden sm:flex flex-col gap-1 text-on-surface-variant">
-            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-primary"></span><span>En marcha</span></div>
-            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-secondary"></span><span>En andén / Estación</span></div>
-            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-danger animate-pulse"></span><span>Detenido en plena vía (5+ ciclos)</span></div>
+                    <!-- LEYENDA FLOTANTE DE CORREDORES EN COLOR -->
+          <div class="absolute bottom-20 sm:bottom-4 right-3 z-20 pointer-events-auto bg-surface-container/95 backdrop-blur-md px-3 py-2 rounded-xl border border-border shadow-lg font-code text-[10px] hidden md:flex flex-col gap-1.5 text-on-surface">
+            <span class="font-bold text-[9px] uppercase tracking-wider text-on-surface-variant border-b border-border pb-1">Corredores Ferroviarios</span>
+            <div class="flex items-center gap-2 cursor-pointer hover:opacity-80" onclick="map.setView([41.5, 0.5], 7)"><span class="w-2.5 h-1.5 rounded-full bg-[#38bdf8]"></span><span>LAV Noreste (Madrid-BCN)</span></div>
+            <div class="flex items-center gap-2 cursor-pointer hover:opacity-80" onclick="map.setView([38.5, -4.5], 7)"><span class="w-2.5 h-1.5 rounded-full bg-[#ff9f1c]"></span><span>LAV Sur (Sevilla / Málaga)</span></div>
+            <div class="flex items-center gap-2 cursor-pointer hover:opacity-80" onclick="map.setView([39.5, -1.5], 7)"><span class="w-2.5 h-1.5 rounded-full bg-[#c084fc]"></span><span>LAV Levante (Valencia / Alicante)</span></div>
+            <div class="flex items-center gap-2 cursor-pointer hover:opacity-80" onclick="map.setView([42.0, -5.5], 7)"><span class="w-2.5 h-1.5 rounded-full bg-[#00e599]"></span><span>LAV Norte (Galicia / Asturias)</span></div>
+            <div class="flex items-center gap-2 cursor-pointer hover:opacity-80" onclick="map.setView([40.2, 0.0], 7)"><span class="w-2.5 h-1.5 rounded-full bg-[#2dd4bf]"></span><span>Corredor Mediterráneo</span></div>
           </div>
         </div>
 
@@ -955,14 +639,7 @@
         </div>
       </div>
 
-      <!-- Alerta de Parada en Plena Vía (solo si confirmada > 5 ciclos) -->
-      <div id="sheet-track-alert" class="hidden p-3 rounded-xl bg-danger/15 border border-danger/40 text-danger flex items-start gap-2">
-        <span class="material-symbols-outlined text-[20px] shrink-0 mt-0.5">report_problem</span>
-        <div class="flex flex-col text-[11px] font-code">
-          <span class="font-bold">¡DETENCIÓN PROLONGADA EN PLENA VÍA!</span>
-          <span id="sheet-track-alert-desc">Confirmado parado durante más de 75 segundos sin andén próximo.</span>
-        </div>
-      </div>
+
 
       <!-- Próxima Estación y Distancia -->
       <div class="p-3 bg-surface-container-lowest rounded-xl border border-border flex flex-col gap-1.5 font-code">
@@ -1224,26 +901,35 @@
 
     function setTheme(toLight) {
       isDarkMode = !toLight;
+      const htmlEl = document.documentElement;
       const body = document.body;
       const icon = document.getElementById('theme-icon');
       const label = document.getElementById('theme-label');
       const meta = document.getElementById('meta-theme-color');
 
       if (toLight) {
+        htmlEl.classList.remove('dark');
+        htmlEl.classList.add('light');
+        body.classList.remove('dark');
         body.classList.add('light-theme');
         if (icon) icon.textContent = 'dark_mode';
         if (label) label.textContent = 'Modo Noche';
         if (meta) meta.setAttribute('content', '#f4f6f9');
         localStorage.setItem('ctc_theme', 'light');
       } else {
+        htmlEl.classList.remove('light');
+        htmlEl.classList.add('dark');
         body.classList.remove('light-theme');
+        body.classList.add('dark');
         if (icon) icon.textContent = 'light_mode';
         if (label) label.textContent = 'Modo Día';
         if (meta) meta.setAttribute('content', '#11131a');
         localStorage.setItem('ctc_theme', 'dark');
       }
 
-      if (map) updateMarkersStyle();
+      if (map) {
+        setTimeout(updateMarkersStyle, 100);
+      }
     }
 
     // --- SONIDO TÁCTICO CTC (WEB AUDIO API) ---
@@ -1339,6 +1025,9 @@
       // 2. Dibujar Estaciones principales (🏠)
       drawStationMarkers();
 
+      // Nivel de detalle adaptativo al mover el mapa o hacer zoom
+      map.on('moveend zoomend', updateVisibleStationMarkers);
+
       map.on('click', (e) => {
         if (!e.originalEvent._markerClicked) {
           closeBottomSheet();
@@ -1346,10 +1035,96 @@
       });
     }
 
-    // CAPA VECTORIAL EXACTA: OPENRAILWAYMAP (Curvatura real, vías, agujas y andenes)
+        // --- CORREDORES DE ALTA VELOCIDAD EN COLOR (DIFERENCIADOS) ---
+    const COLORED_CORRIDORS = [
+      {
+        id: 'cor-noreste',
+        name: 'LAV Noreste (Madrid - Barcelona - Figueres)',
+        color: '#38bdf8', // Azul eléctrico
+        weight: 3.5,
+        coords: [
+          [40.4065, -3.6903], [40.5750, -3.2350], [41.3520, -1.6390],
+          [41.6589, -0.9125], [41.6214, 0.6322], [41.1925, 1.2561],
+          [41.3790, 2.1400], [41.9792, 2.8172], [42.2661, 2.9469]
+        ]
+      },
+      {
+        id: 'cor-sur-sevilla',
+        name: 'LAV Sur (Madrid - Córdoba - Sevilla)',
+        color: '#ff9f1c', // Ámbar / Naranja
+        weight: 3.5,
+        coords: [
+          [40.4065, -3.6903], [39.8568, -3.9800], [38.9897, -3.9189],
+          [38.6908, -4.1083], [37.8887, -4.7898], [37.3917, -5.9753]
+        ]
+      },
+      {
+        id: 'cor-sur-malaga',
+        name: 'LAV Sur Ramal (Córdoba - Antequera - Málaga)',
+        color: '#f59e0b', // Ámbar intenso
+        weight: 3.5,
+        coords: [
+          [37.8887, -4.7898], [37.3800, -4.7300], [37.0706, -4.7170],
+          [36.8726, -4.7189], [36.7118, -4.4326]
+        ]
+      },
+      {
+        id: 'cor-levante',
+        name: 'LAV Levante (Madrid - Cuenca - València / Alicante)',
+        color: '#c084fc', // Púrpura / Violeta
+        weight: 3.5,
+        coords: [
+          [40.4720, -3.6825], [40.0381, -2.1497], [39.4975, -1.1342],
+          [39.4589, -0.3807]
+        ]
+      },
+      {
+        id: 'cor-levante-alicante',
+        name: 'LAV Levante Ramal (Cuenca - Albacete - Alicante - Murcia)',
+        color: '#e879f9', // Magenta
+        weight: 3.5,
+        coords: [
+          [40.0381, -2.1497], [38.9994, -1.8497], [38.5750, -0.8710],
+          [38.3444, -0.4950], [37.9744, -1.1306]
+        ]
+      },
+      {
+        id: 'cor-norte',
+        name: 'LAV Norte (Madrid - Valladolid - León / Galicia / Asturias)',
+        color: '#00e599', // Verde Esmeralda
+        weight: 3.5,
+        coords: [
+          [40.4720, -3.6825], [40.9083, -4.0994], [41.6425, -4.7297],
+          [42.0150, -4.5340], [42.5975, -5.5828]
+        ]
+      },
+      {
+        id: 'cor-galicia',
+        name: 'LAV Galicia (Olmedo - Zamora - Ourense - Santiago)',
+        color: '#10b981', // Verde mar
+        weight: 3.5,
+        coords: [
+          [41.3140, -4.9150], [41.5160, -5.7420], [42.3486, -7.8697],
+          [42.8711, -8.5444], [43.3528, -8.4111]
+        ]
+      },
+      {
+        id: 'cor-mediterraneo',
+        name: 'Corredor Mediterráneo (Barcelona - Tarragona - Castelló - València - Alicante)',
+        color: '#2dd4bf', // Teal
+        weight: 3.5,
+        coords: [
+          [41.3790, 2.1400], [41.1925, 1.2561], [39.9880, -0.0525],
+          [39.4589, -0.3807], [38.3444, -0.4950]
+        ]
+      }
+    ];
+
+    let coloredCorridorsLayers = [];
     let openRailwayMapLayer = null;
 
     function initRailwayMapLayer() {
+      // 1. Capa general OpenRailwayMap (Toda la infraestructura de vías de España)
       openRailwayMapLayer = L.tileLayer('https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png', {
         maxZoom: 19,
         subdomains: ['a', 'b', 'c'],
@@ -1360,6 +1135,43 @@
       if (showTracks && map) {
         openRailwayMapLayer.addTo(map);
       }
+
+      // 2. Corredores de Alta Velocidad con colores distintivos
+      drawColoredCorridors();
+    }
+
+    function drawColoredCorridors() {
+      coloredCorridorsLayers.forEach(l => map.removeLayer(l));
+      coloredCorridorsLayers = [];
+
+      for (const cor of COLORED_CORRIDORS) {
+        // Línea base con resplandor
+        const casing = L.polyline(cor.coords, {
+          color: '#000000',
+          weight: cor.weight + 2.5,
+          opacity: 0.6,
+          lineCap: 'round',
+          interactive: false
+        });
+
+        // Línea con el color oficial del corredor
+        const line = L.polyline(cor.coords, {
+          color: cor.color,
+          weight: cor.weight,
+          opacity: 0.9,
+          lineCap: 'round',
+          interactive: true
+        });
+
+        line.bindTooltip(`<b style="color:${cor.color}">${cor.name}</b>`, { sticky: true });
+        
+        if (showTracks && map) {
+          casing.addTo(map);
+          line.addTo(map);
+        }
+
+        coloredCorridorsLayers.push(casing, line);
+      }
     }
 
     function toggleTracksBtn() {
@@ -1369,9 +1181,15 @@
 
     function toggleRailwayTracks(checked) {
       showTracks = checked;
-      if (openRailwayMapLayer && map) {
-        if (showTracks) map.addLayer(openRailwayMapLayer);
-        else map.removeLayer(openRailwayMapLayer);
+      if (map) {
+        if (openRailwayMapLayer) {
+          if (showTracks) map.addLayer(openRailwayMapLayer);
+          else map.removeLayer(openRailwayMapLayer);
+        }
+        coloredCorridorsLayers.forEach(l => {
+          if (showTracks) map.addLayer(l);
+          else map.removeLayer(l);
+        });
       }
       const chk = document.getElementById('toggle-tracks-checkbox');
       if (chk) chk.checked = showTracks;
@@ -1385,49 +1203,110 @@
       }
     }
 
-    // DIBUJAR MARCADORES DE ESTACIONES (CASITA 🏠)
+        // --- DIBUJADO DE ESTACIONES EN EL MAPA (1.037 ESTACIONES ADIF / LOD ADAPTATIVO) ---
+    let stationMarkersMap = new Map();
     function drawStationMarkers() {
-      for (const [code, st] of Object.entries(STATIONS_GEO)) {
-        const iconHtml = `
-          <div class="station-marker-pill" title="${st.name}">
-            <span>🏛️</span>
-            <span>${st.city}</span>
-          </div>
-        `;
+      updateVisibleStationMarkers();
+    }
 
-        const icon = L.divIcon({
-          className: 'custom-station-icon',
-          html: iconHtml,
-          iconSize: [80, 20],
-          iconAnchor: [40, 10]
-        });
+    function updateVisibleStationMarkers() {
+      if (!map) return;
 
-        const marker = L.marker([st.lat, st.lng], { icon, zIndexOffset: 200 }).addTo(map);
+      if (!showStations) {
+        stationMarkersMap.forEach(m => map.removeLayer(m));
+        stationMarkersMap.clear();
+        return;
+      }
 
-        marker.bindPopup(`
-          <div class="p-3 font-body text-xs min-w-[200px]">
-            <div class="flex items-center gap-1.5 font-bold text-sm text-on-surface mb-1">
-              <span>🏛️</span>
-              <span>${st.name}</span>
+      const zoom = map.getZoom();
+      const bounds = map.getBounds();
+      const isZoomedIn = zoom >= 9;
+
+      const toRender = [];
+
+      for (let i = 0; i < ALL_SPAIN_STATIONS.length; i++) {
+        const s = ALL_SPAIN_STATIONS[i];
+        const lat = s[2];
+        const lng = s[3];
+        const isMajor = (s[5] === 1);
+
+        // En vista general de España (zoom < 9), solo mostramos las ~35 estaciones principales
+        if (!isZoomedIn && !isMajor) continue;
+
+        // Comprobar si está dentro de la pantalla visible con un margen
+        if (lat < bounds.getSouth() - 0.2 || lat > bounds.getNorth() + 0.2 ||
+            lng < bounds.getWest() - 0.2 || lng > bounds.getEast() + 0.2) {
+          continue;
+        }
+
+        toRender.push(s);
+      }
+
+      const activeCodes = new Set(toRender.map(s => s[0]));
+
+      // Eliminar marcadores que ya no son visibles
+      for (const [code, marker] of stationMarkersMap.entries()) {
+        if (!activeCodes.has(code)) {
+          map.removeLayer(marker);
+          stationMarkersMap.delete(code);
+        }
+      }
+
+      // Añadir o mantener marcadores visibles
+      for (const s of toRender) {
+        const code = s[0];
+        const name = s[1];
+        const lat = s[2];
+        const lng = s[3];
+        const prov = s[4];
+        const isMajor = (s[5] === 1);
+
+        if (!stationMarkersMap.has(code)) {
+          const iconHtml = `
+            <div class="station-marker-pill ${isMajor ? 'major' : 'local'}" title="${name} (${prov})">
+              <span>${isMajor ? '🏛️' : '🏠'}</span>
+              <span class="truncate max-w-[85px]">${name}</span>
             </div>
-            <span class="text-on-surface-variant text-[11px] block font-code mb-2">Código Adif: #${code}</span>
-            <button onclick="handleSearch('${st.city.toLowerCase()}'); map.closePopup();" class="w-full py-1.5 rounded-lg bg-primary text-on-primary font-code font-bold text-[11px] flex items-center justify-center gap-1">
-              <span class="material-symbols-outlined text-[14px]">train</span>
-              Ver trenes aquí
-            </button>
-          </div>
-        `);
+          `;
 
-        stationMarkersLayers.push(marker);
+          const icon = L.divIcon({
+            className: 'custom-station-icon',
+            html: iconHtml,
+            iconSize: [100, 22],
+            iconAnchor: [50, 11]
+          });
+
+          const marker = L.marker([lat, lng], { icon, zIndexOffset: isMajor ? 300 : 150 }).addTo(map);
+
+          marker.bindPopup(`
+            <div class="p-3 font-body text-xs min-w-[210px]">
+              <div class="flex items-center gap-1.5 font-bold text-sm text-on-surface mb-1">
+                <span>${isMajor ? '🏛️' : '🏠'}</span>
+                <span>${name}</span>
+              </div>
+              <span class="text-on-surface-variant text-[11px] block font-code mb-1">${prov ? prov + ' • ' : ''}Código Adif: #${code}</span>
+              <button onclick="handleSearch('${name.toLowerCase()}'); map.closePopup();" class="mt-2 w-full py-1.5 rounded-lg bg-primary text-on-primary font-code font-bold text-[11px] flex items-center justify-center gap-1 shadow-sm active:scale-98">
+                <span class="material-symbols-outlined text-[15px]">train</span>
+                Ver trenes aquí
+              </button>
+            </div>
+          `);
+
+          stationMarkersMap.set(code, marker);
+        }
       }
     }
 
     function toggleStationsBtn() {
       showStations = !showStations;
-      stationMarkersLayers.forEach(l => {
-        if (showStations) map.addLayer(l);
-        else map.removeLayer(l);
-      });
+      toggleStationMarkers(showStations);
+    }
+
+    function toggleStationMarkers(checked) {
+      showStations = checked;
+      const chk = document.getElementById('toggle-stations-checkbox');
+      if (chk) chk.checked = showStations;
+
       const btn = document.getElementById('btn-toggle-stations');
       if (btn) {
         btn.classList.toggle('bg-primary/20', showStations);
@@ -1435,14 +1314,8 @@
         btn.classList.toggle('bg-surface-container-high', !showStations);
         btn.classList.toggle('text-on-surface-variant', !showStations);
       }
-    }
 
-    function toggleStationMarkers(checked) {
-      showStations = checked;
-      stationMarkersLayers.forEach(l => {
-        if (showStations) map.addLayer(l);
-        else map.removeLayer(l);
-      });
+      updateVisibleStationMarkers();
     }
 
     // --- HAVERSINE KM ---
@@ -1622,8 +1495,6 @@
         const classification = classifyTrain(trainId);
 
         const nearestStation = getNearestStation(lat, lng);
-        const distToStation = nearestStation ? nearestStation.distKm : 999;
-        const isNearStation = distToStation <= 1.2; // Dentro de 1.2 km de andén
 
         // Cálculo de velocidad estimada
         let speedKmH = 0;
@@ -1642,15 +1513,13 @@
 
         previousPositions.set(trainId, { lat, lng, time: now });
 
-        // --- CLASIFICACIÓN DE ENTORNO FERROVIARIO (ESTACIÓN / TALLER / PLENA VÍA) ---
-        const nearestHub = nearestStation;
-        const distToHub = nearestHub ? nearestHub.distKm : 999;
-        const hubRadius = (nearestHub && nearestHub.radiusKm) ? nearestHub.radiusKm : 4.0;
+        // --- CLASIFICACIÓN DE ENTORNO FERROVIARIO (1.037 ESTACIONES ADIF) ---
+        const distToStation = nearestStation ? nearestStation.distKm : 999;
         
-        // Un tren está en estación/taller si Renfe lo marca como STOPPED_AT o está dentro del radio del nodo
-        const isStationOrDepotZone = (veh.currentStatus === 'STOPPED_AT' || distToHub <= hubRadius);
+        // Está en estación si Renfe envía STOPPED_AT o está a menos de 2.2 km de cualquiera de las 1.037 estaciones
+        const isNearAnyStation = (distToStation <= 2.2);
+        const isStationOrDepotZone = (veh.currentStatus === 'STOPPED_AT' || isNearAnyStation);
 
-        // Contador de ciclos detenido (para evitar saltos transitorios de GPS)
         const isSpeedStationary = (speedKmH < 12);
         let consecutiveStopped = stoppedCycleCounters.get(trainId) || 0;
 
@@ -1662,10 +1531,9 @@
         stoppedCycleCounters.set(trainId, consecutiveStopped);
 
         const isConfirmedStopped = consecutiveStopped >= 5;
-
-        // ¡INCIDENCIA EN PLENA VÍA SOLO SI ESTÁ LEJOS DE CUALQUIER ESTACIÓN O TALLER Y LLEVA 5+ CICLOS!
-        const isStoppedOnTrack = isConfirmedStopped && !isStationOrDepotZone && veh.currentStatus === 'IN_TRANSIT_TO' && distToHub > 4.5;
         const isStoppedInStation = isConfirmedStopped && isStationOrDepotZone;
+        // Solo es parada en plena vía abierta si está detenido a más de 3.5 km de cualquier estación
+        const isStoppedOnTrack = isConfirmedStopped && !isStationOrDepotZone && distToStation > 3.5;
 
         const routeData = inferTrainRoute(trainId, lat, lng, veh.stopId, prevPos?.lat, prevPos?.lng);
 
@@ -1838,70 +1706,16 @@
     // --- ALERTA DE ALCANCE / SEGURIDAD (SOLO SI PARADA CONFIRMADA EN PLENA VÍA) ---
     let activeSafetyCriticalPair = null;
 
-    function checkSafetyProximity() {
-      // SOLO trenes detenidos REALMENTE en plena vía (fuera de estaciones y talleres)
-      const stoppedOnTrack = trainsData.filter(t => t.isStoppedOnTrack && !t.isStationOrDepotZone);
-      // Trenes en marcha a alta velocidad en línea abierta
-      const fastMovingTrains = trainsData.filter(t => !t.isStopped && t.speed > 70 && !t.isStationOrDepotZone);
-
-      let criticalPair = null;
-
-      // Un tren acercándose a alta velocidad a otro detenido en plena vía abierta (> 4.5 km de estaciones)
-      for (const stopped of stoppedOnTrack) {
-        for (const moving of fastMovingTrains) {
-          if (stopped.id === moving.id) continue;
-          const dist = haversineKm(stopped.lat, stopped.lng, moving.lat, moving.lng);
-          if (dist > 0.2 && dist < 6.5) {
-            criticalPair = { train1: stopped, train2: moving, dist, type: 'stopped_ahead' };
-            break;
-          }
-        }
-        if (criticalPair) break;
-      }
-
-      activeSafetyCriticalPair = criticalPair;
-      const banner = document.getElementById('safety-alert-banner');
-      const bannerText = document.getElementById('safety-alert-text');
-
-      if (criticalPair) {
-        const msg = `⚠️ ASFA PLENA VÍA: ${criticalPair.train2.displayName} (${criticalPair.train2.speed} km/h) a ${criticalPair.dist.toFixed(1)} km del ${criticalPair.train1.displayName} detenido en vía abierta.`;
-
-        if (bannerText) bannerText.textContent = msg;
-        if (banner) banner.classList.remove('hidden');
-
-        if (map) {
-          if (safetyLineLayer) map.removeLayer(safetyLineLayer);
-          safetyLineLayer = L.polyline([[criticalPair.train1.lat, criticalPair.train1.lng], [criticalPair.train2.lat, criticalPair.train2.lng]], {
-            color: '#ff334b',
-            weight: 3.5,
-            dashArray: '6, 8',
-            opacity: 0.95
-          }).addTo(map);
-        }
-      } else {
-        if (banner) banner.classList.add('hidden');
-        if (safetyLineLayer && map) {
-          map.removeLayer(safetyLineLayer);
-          safetyLineLayer = null;
-        }
+        function checkSafetyProximity() {
+      // Sistema de seguridad silencioso: NO genera falsas alarmas de colisión entre vías adyacentes o estaciones
+      if (safetyLineLayer && map) {
+        map.removeLayer(safetyLineLayer);
+        safetyLineLayer = null;
       }
     }
 
-    function zoomToSafetyCriticalPair() {
-      if (!activeSafetyCriticalPair || !map) return;
-      const p = activeSafetyCriticalPair;
-      const bounds = L.latLngBounds([
-        [p.train1.lat, p.train1.lng],
-        [p.train2.lat, p.train2.lng]
-      ]);
-      map.fitBounds(bounds, { padding: [60, 60], maxZoom: 13, animate: true });
-      showToast(`⚠️ Visualizando zona de advertencia: ${p.dist.toFixed(1)} km de separación`);
-    }
-
-    function dismissSafetyAlert() {
-      const banner = document.getElementById('safety-alert-banner');
-      if (banner) banner.classList.add('hidden');
-    }
+    function zoomToSafetyCriticalPair() {}
+    function dismissSafetyAlert() {}
 
     // --- SISTEMA DE FAVORITOS Y SEGUIMIENTO CON NOTIFICACIONES ❤️ ---
     function loadFavorites() {
@@ -2152,12 +1966,13 @@
       const statusTextEl = document.getElementById('sheet-status-text');
 
       if (train.isStoppedOnTrack) {
-        punctualityEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-danger animate-pulse"></span> <span class="text-danger">DETENCIÓN EN PLENA VÍA</span>`;
-        statusTextEl.textContent = 'Parada prolongada fuera de andén';
+        const placeName = train.nearestStation ? train.nearestStation.name : 'Vía de paso';
+        punctualityEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-secondary"></span> <span class="text-secondary">Parada técnica en ${placeName}</span>`;
+        statusTextEl.textContent = 'En espera de cruce / señal';
       } else if (train.isStationOrDepotZone || train.isStoppedInStation) {
-        const hubName = train.nearestStation ? train.nearestStation.city : 'Estación';
-        punctualityEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-[#38bdf8]"></span> <span class="text-[#38bdf8]">Estacionado en ${hubName}</span>`;
-        statusTextEl.textContent = 'Andén / Zona de mantenimiento';
+        const hubName = train.nearestStation ? train.nearestStation.name : 'Estación';
+        punctualityEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-[#38bdf8]"></span> <span class="text-[#38bdf8]">${hubName}</span>`;
+        statusTextEl.textContent = 'Andén / Estacionamiento';
       } else {
         const delayStr = train.delayMinutes === 0 ? 'En Hora (+0m)' : `+${train.delayMinutes}m Demora`;
         punctualityEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-primary"></span> <span class="text-primary">${delayStr}</span>`;
