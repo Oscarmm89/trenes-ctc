@@ -7,6 +7,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="theme-color" content="#11131a" id="meta-theme-color"/>
   <title>VÍA LIBRE - Centro de Control de Tráfico Ferroviario (CTC)</title>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="application-name" content="Vía Libre"/>
+  <meta name="apple-mobile-web-app-title" content="Vía Libre"/>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2311131a'/><circle cx='50' cy='50' r='38' fill='%2300e599' opacity='0.2'/><path d='M30 70 L50 25 L70 70 Z' fill='none' stroke='%2300e599' stroke-width='6'/><circle cx='50' cy='55' r='6' fill='%2300e599'/></svg>"/>
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2311131a'/><circle cx='50' cy='50' r='38' fill='%2300e599' opacity='0.2'/><path d='M30 70 L50 25 L70 70 Z' fill='none' stroke='%2300e599' stroke-width='6'/><circle cx='50' cy='55' r='6' fill='%2300e599'/></svg>"/>
 
   <!-- Google Fonts & Material Symbols -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -51,6 +56,138 @@
         }
       }
     };
+
+    // --- VARIABLES Y COMPROBACIÓN DE TREN EN URL (COMPARTIR VIAJE) ---
+    let autoSelectTrainOnLoad = null;
+    let hasAppliedInitialTrain = false;
+    let deferredPwaPrompt = null;
+
+    (function checkUrlParams() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get('train') || params.get('tren') || params.get('id');
+        if (t) autoSelectTrainOnLoad = t.trim().toLowerCase();
+      } catch (e) {}
+
+      // Manejador de instalación PWA
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPwaPrompt = e;
+        const btn = document.getElementById('pwa-native-install-btn');
+        if (btn) btn.classList.remove('hidden');
+      });
+    })();
+
+    // --- COMPARTIR VIAJE EN DIRECTO (WHATSAPP, TELEGRAM, COPIAR) ---
+    function openShareModal() {
+      if (!selectedTrainId) return;
+      const train = trainsData.find(t => t.id === selectedTrainId);
+      if (!train) return;
+
+      const origin = window.location.origin || '';
+      const pathname = window.location.pathname || '';
+      const shareUrl = `${origin}${pathname}?train=${encodeURIComponent(train.id)}`;
+
+      const input = document.getElementById('share-url-input');
+      if (input) input.value = shareUrl;
+
+      const sub = document.getElementById('share-modal-subtitle');
+      if (sub) sub.textContent = `${train.displayName} (${train.route.origin} ➔ ${train.route.destination})`;
+
+      const nativeBtn = document.getElementById('btn-native-share');
+      if (nativeBtn) {
+        if (navigator.share) nativeBtn.classList.remove('hidden');
+        else nativeBtn.classList.add('hidden');
+      }
+
+      document.getElementById('share-modal-backdrop').classList.remove('hidden');
+      playChime('blip');
+    }
+
+    function closeShareModal() {
+      document.getElementById('share-modal-backdrop').classList.add('hidden');
+    }
+
+    function copyShareLink() {
+      const input = document.getElementById('share-url-input');
+      if (!input) return;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(input.value).then(() => {
+          showToast('✅ ¡Enlace copiado al portapapeles!');
+          playChime('chime');
+        }).catch(() => fallbackCopy(input));
+      } else {
+        fallbackCopy(input);
+      }
+    }
+
+    function fallbackCopy(input) {
+      input.select();
+      input.setSelectionRange(0, 99999);
+      document.execCommand('copy');
+      showToast('✅ ¡Enlace copiado al portapapeles!');
+      playChime('chime');
+    }
+
+    function shareViaWhatsApp() {
+      if (!selectedTrainId) return;
+      const train = trainsData.find(t => t.id === selectedTrainId);
+      if (!train) return;
+      const input = document.getElementById('share-url-input');
+      const url = input ? input.value : window.location.href;
+
+      const text = `🚄 ¡Sigue mi tren ${train.displayName} en tiempo real!\n📍 Recorrido: ${train.route.origin} ➔ ${train.route.destination}\n⚡ Velocidad: ${train.speed} km/h\nEnlace en directo: ${url}`;
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function shareViaTelegram() {
+      if (!selectedTrainId) return;
+      const train = trainsData.find(t => t.id === selectedTrainId);
+      if (!train) return;
+      const input = document.getElementById('share-url-input');
+      const url = input ? input.value : window.location.href;
+
+      const text = `🚄 Sigue mi tren ${train.displayName} (${train.route.origin} ➔ ${train.route.destination}) en tiempo real:`;
+      window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function shareViaNative() {
+      if (!selectedTrainId || !navigator.share) return;
+      const train = trainsData.find(t => t.id === selectedTrainId);
+      if (!train) return;
+      const input = document.getElementById('share-url-input');
+      const url = input ? input.value : window.location.href;
+
+      navigator.share({
+        title: `Seguimiento en vivo: ${train.displayName}`,
+        text: `Sigue el avance del ${train.displayName} (${train.route.origin} ➔ ${train.route.destination}) en tiempo real:`,
+        url: url
+      }).catch(() => {});
+    }
+
+    // --- INSTALACIÓN PWA (MODAL DE INSTRUCCIONES) ---
+    function openInstallModal() {
+      document.getElementById('install-modal-backdrop').classList.remove('hidden');
+      playChime('blip');
+    }
+
+    function closeInstallModal() {
+      document.getElementById('install-modal-backdrop').classList.add('hidden');
+    }
+
+    function triggerPwaPrompt() {
+      if (deferredPwaPrompt) {
+        deferredPwaPrompt.prompt();
+        deferredPwaPrompt.userChoice.then((choice) => {
+          if (choice.outcome === 'accepted') {
+            showToast('🎉 ¡Gracias por instalar Vía Libre CTC!');
+          }
+          deferredPwaPrompt = null;
+          closeInstallModal();
+        });
+      }
+    }
   </script>
 
   <style>
@@ -319,6 +456,10 @@
           <span class="material-symbols-outlined text-[20px]">terminal</span>
           <span class="text-sm">Registro de Tráfico</span>
         </button>
+        <button class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-primary bg-primary/10 hover:bg-primary/20 transition-all text-left w-full mt-1.5" onclick="openInstallModal(); toggleMobileDrawer(false);">
+          <span class="material-symbols-outlined text-[20px]">install_mobile</span>
+          <span class="text-sm font-bold">Instalar como App</span>
+        </button>
       </nav>
 
       <!-- Panel de Opciones de Visualización en el Mapa -->
@@ -416,15 +557,21 @@
       </div>
     </header>
 
-    <!-- BANNER DE ALERTA DE ALCANCE / SEGURIDAD (Solo salta si hay una detención crítica confirmada) -->
-    <div id="safety-alert-banner" class="hidden bg-danger text-white px-4 py-2 text-xs sm:text-sm font-code font-bold z-30 flex items-center justify-between shadow-lg">
-      <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-[20px] animate-pulse">warning</span>
-        <span id="safety-alert-text">ALERTA ASFA: Distancia de cantón crítica detectada</span>
+    <!-- BANNER DE ALERTA DE ALCANCE / SEGURIDAD RADAR -->
+    <div id="safety-alert-banner" class="hidden bg-danger text-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-code font-bold z-30 flex items-center justify-between shadow-lg">
+      <div class="flex items-center gap-2 truncate">
+        <span class="material-symbols-outlined text-[20px] animate-pulse shrink-0">warning</span>
+        <span id="safety-alert-text" class="truncate">ALERTA ASFA: Distancia de cantón reducida</span>
       </div>
-      <button onclick="dismissSafetyAlert()" class="p-1 hover:bg-white/20 rounded">
-        <span class="material-symbols-outlined text-[18px]">close</span>
-      </button>
+      <div class="flex items-center gap-2 shrink-0">
+        <button id="safety-zoom-btn" onclick="zoomToSafetyCriticalPair()" class="px-2.5 py-1 rounded-lg bg-white text-danger hover:bg-white/90 text-xs font-bold flex items-center gap-1 shadow transition-all">
+          <span class="material-symbols-outlined text-[15px]">my_location</span>
+          <span>Ver en Mapa</span>
+        </button>
+        <button onclick="dismissSafetyAlert()" class="p-1 hover:bg-white/20 rounded" title="Descartar">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
     </div>
 
     <!-- CONTENEDOR PRINCIPAL DE PANTALLAS -->
@@ -496,12 +643,16 @@
             <div class="pointer-events-auto flex items-center gap-1.5 overflow-x-auto ctc-scrollbar pb-1 px-0.5">
               <button class="quick-pill active px-3 py-1 rounded-full text-[11px] font-code font-bold bg-primary text-on-primary shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="ALL" onclick="setQuickPill('ALL')">🚄 Todos</button>
               <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-on-surface border border-border shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="FAVS" onclick="setQuickPill('FAVS')">❤️ Mis Trenes</button>
-              <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-on-surface border border-border shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="AVE" onclick="setQuickPill('AVE')">⚡ AVE/Avlo</button>
+              <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-[#00e599] border border-[#00e599]/40 shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="AVE" onclick="setQuickPill('AVE')">⚡ AVE</button>
+              <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-[#c084fc] border border-[#c084fc]/40 shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="AVLO" onclick="setQuickPill('AVLO')">🟣 Avlo</button>
+              <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-[#ffbd58] border border-[#ffbd58]/40 shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="ALVIA" onclick="setQuickPill('ALVIA')">🟠 Alvia</button>
+              <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-[#38bdf8] border border-[#38bdf8]/40 shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="AVANT" onclick="setQuickPill('AVANT')">🔵 Avant</button>
+              <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-[#2dd4bf] border border-[#2dd4bf]/40 shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="EUROMED" onclick="setQuickPill('EUROMED')">🟢 Euromed</button>
+              <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-danger border border-danger/40 shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="PARADOS" onclick="setQuickPill('PARADOS')">🔴 Parados en Vía</button>
               <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-on-surface border border-border shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="MADRID" onclick="setQuickPill('MADRID')">📍 Madrid</button>
               <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-on-surface border border-border shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="BARCELONA" onclick="setQuickPill('BARCELONA')">📍 Barcelona</button>
               <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-on-surface border border-border shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="SUR" onclick="setQuickPill('SUR')">📍 Andalucía</button>
               <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-on-surface border border-border shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="LEVANTE" onclick="setQuickPill('LEVANTE')">📍 Valencia</button>
-              <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-danger border border-danger/40 shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="PARADOS" onclick="setQuickPill('PARADOS')">🔴 Parados Confirmados</button>
             </div>
           </div>
 
@@ -840,9 +991,13 @@
           <span class="material-symbols-outlined text-[18px]">center_focus_strong</span>
           Centrar
         </button>
-        <button id="sheet-fav-btn-action" onclick="toggleFavoriteActiveTrain()" class="py-2.5 px-4 rounded-xl bg-surface-container-high border border-border text-on-surface font-code font-bold text-xs flex items-center gap-1.5 hover:border-red-500 transition-colors">
+        <button id="sheet-fav-btn-action" onclick="toggleFavoriteActiveTrain()" class="py-2.5 px-3 rounded-xl bg-surface-container-high border border-border text-on-surface font-code font-bold text-xs flex items-center gap-1.5 hover:border-red-500 transition-colors">
           <span>❤️</span>
           <span>Seguir</span>
+        </button>
+        <button onclick="openShareModal()" class="py-2.5 px-3 rounded-xl bg-surface-container-high border border-border text-on-surface font-code font-bold text-xs flex items-center gap-1.5 hover:border-primary hover:text-primary transition-colors" title="Compartir este viaje">
+          <span class="material-symbols-outlined text-[18px]">share</span>
+          <span>Compartir</span>
         </button>
       </div>
 
@@ -1520,6 +1675,22 @@
       renderDesktopList();
       checkSafetyProximity();
 
+      // Comprobación de tren compartido en URL
+      if (autoSelectTrainOnLoad && !hasAppliedInitialTrain && trainsData.length > 0) {
+        const target = trainsData.find(t => 
+          t.id.toLowerCase().includes(autoSelectTrainOnLoad) || 
+          t.displayName.toLowerCase().replace(/\s+/g, '').includes(autoSelectTrainOnLoad.replace(/\s+/g, ''))
+        );
+        if (target) {
+          hasAppliedInitialTrain = true;
+          setTimeout(() => {
+            openTrainDossier(target.id, true);
+            toggleCameraActiveTrain();
+            showToast(`📍 Siguiendo tren compartido: ${target.displayName}`);
+          }, 400);
+        }
+      }
+
       if (selectedTrainId) {
         const current = trainsData.find(t => t.id === selectedTrainId);
         if (current) renderBottomSheetContent(current);
@@ -1634,34 +1805,62 @@
     }
 
     // --- ALERTA DE ALCANCE / SEGURIDAD (SOLO SI PARADA CONFIRMADA EN PLENA VÍA) ---
+    let activeSafetyCriticalPair = null;
+
     function checkSafetyProximity() {
       const stoppedOnTrack = trainsData.filter(t => t.isStoppedOnTrack);
       const movingTrains = trainsData.filter(t => !t.isStopped);
 
       let criticalPair = null;
 
+      // 1. Prioridad: tren en marcha acercándose a uno detenido en plena vía (< 8 km)
       for (const stopped of stoppedOnTrack) {
         for (const moving of movingTrains) {
           const dist = haversineKm(stopped.lat, stopped.lng, moving.lat, moving.lng);
           if (dist > 0.1 && dist < 8.0) {
-            criticalPair = { stopped, moving, dist };
+            criticalPair = { train1: stopped, train2: moving, dist, type: 'stopped_ahead' };
             break;
           }
         }
         if (criticalPair) break;
       }
 
+      // 2. Verificación secundaria: dos trenes de alta velocidad circulando a menos de 4.5 km
+      if (!criticalPair) {
+        for (let i = 0; i < movingTrains.length; i++) {
+          for (let j = i + 1; j < movingTrains.length; j++) {
+            const tA = movingTrains[i];
+            const tB = movingTrains[j];
+            if (tA.route.corridor === tB.route.corridor && tA.speed > 80 && tB.speed > 80) {
+              const d = haversineKm(tA.lat, tA.lng, tB.lat, tB.lng);
+              if (d > 0.1 && d < 4.5) {
+                criticalPair = { train1: tA, train2: tB, dist: d, type: 'close_running' };
+                break;
+              }
+            }
+          }
+          if (criticalPair) break;
+        }
+      }
+
+      activeSafetyCriticalPair = criticalPair;
       const banner = document.getElementById('safety-alert-banner');
       const bannerText = document.getElementById('safety-alert-text');
 
       if (criticalPair) {
-        const msg = `⚠️ PRECAUCIÓN ASFA: Tren ${criticalPair.moving.displayName} a ${criticalPair.dist.toFixed(1)} km del ${criticalPair.stopped.displayName} detenido en plena vía.`;
+        let msg = '';
+        if (criticalPair.type === 'stopped_ahead') {
+          msg = `⚠️ ASFA CRÍTICO: Tren ${criticalPair.train2.displayName} a ${criticalPair.dist.toFixed(1)} km del ${criticalPair.train1.displayName} detenido en plena vía.`;
+        } else {
+          msg = `⚠️ RADAR CANTÓN REDUCIDO: ${criticalPair.train1.displayName} y ${criticalPair.train2.displayName} a ${criticalPair.dist.toFixed(1)} km en línea ${criticalPair.train1.route.corridor}.`;
+        }
+
         if (bannerText) bannerText.textContent = msg;
         if (banner) banner.classList.remove('hidden');
 
         if (map) {
           if (safetyLineLayer) map.removeLayer(safetyLineLayer);
-          safetyLineLayer = L.polyline([[criticalPair.stopped.lat, criticalPair.stopped.lng], [criticalPair.moving.lat, criticalPair.moving.lng]], {
+          safetyLineLayer = L.polyline([[criticalPair.train1.lat, criticalPair.train1.lng], [criticalPair.train2.lat, criticalPair.train2.lng]], {
             color: '#ff334b',
             weight: 3.5,
             dashArray: '6, 8',
@@ -1677,6 +1876,17 @@
           safetyLineLayer = null;
         }
       }
+    }
+
+    function zoomToSafetyCriticalPair() {
+      if (!activeSafetyCriticalPair || !map) return;
+      const p = activeSafetyCriticalPair;
+      const bounds = L.latLngBounds([
+        [p.train1.lat, p.train1.lng],
+        [p.train2.lat, p.train2.lng]
+      ]);
+      map.fitBounds(bounds, { padding: [60, 60], maxZoom: 13, animate: true });
+      showToast(`⚠️ Visualizando zona de advertencia: ${p.dist.toFixed(1)} km de separación`);
     }
 
     function dismissSafetyAlert() {
@@ -2047,6 +2257,18 @@
       } else if (pillKey === 'AVE') {
         currentCategory = 'AVE';
         handleSearch('');
+      } else if (pillKey === 'AVLO') {
+        currentCategory = 'AVLO';
+        handleSearch('');
+      } else if (pillKey === 'ALVIA') {
+        currentCategory = 'ALVIA';
+        handleSearch('');
+      } else if (pillKey === 'AVANT') {
+        currentCategory = 'AVANT';
+        handleSearch('');
+      } else if (pillKey === 'EUROMED') {
+        currentCategory = 'EUROMED';
+        handleSearch('');
       } else if (pillKey === 'PARADOS') {
         currentCategory = 'STOPPED';
         handleSearch('');
@@ -2079,7 +2301,9 @@
           const matchNearest = t.nearestStation && t.nearestStation.name.toLowerCase().includes(currentSearchTerm);
           const matchCorridor = t.route.corridor.toLowerCase().includes(currentSearchTerm);
 
-          if (!matchName && !matchType && !matchOrigin && !matchDest && !matchNearest && !matchCorridor) {
+          const matchItinerary = t.route.itinerary && t.route.itinerary.some(st => st.station.toLowerCase().includes(currentSearchTerm));
+
+          if (!matchName && !matchType && !matchOrigin && !matchDest && !matchNearest && !matchCorridor && !matchItinerary) {
             return false;
           }
         }
@@ -2457,5 +2681,93 @@
       secondsUntilNextPoll = 15;
     }
   </script>
+
+  <!-- ========================================== -->
+  <!-- MODAL: COMPARTIR VIAJE EN DIRECTO 📲       -->
+  <!-- ========================================== -->
+  <div id="share-modal-backdrop" class="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container rounded-2xl max-w-md w-full border border-border shadow-2xl p-5 flex flex-col gap-4 font-body">
+      <div class="flex items-center justify-between border-b border-border pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-[22px]">share</span>
+          <div class="flex flex-col">
+            <span class="font-headline font-bold text-base text-on-surface">Compartir Viaje en Vivo</span>
+            <span class="text-xs text-on-surface-variant font-code" id="share-modal-subtitle">Enlace directo a este tren</span>
+          </div>
+        </div>
+        <button onclick="closeShareModal()" class="p-1 rounded text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <p class="text-xs text-on-surface-variant">Cualquier persona con este enlace verá la posición en directo, paradas y velocidad de este tren en tiempo real:</p>
+
+      <div class="p-2.5 rounded-xl bg-surface-container-lowest border border-border flex items-center gap-2">
+        <input type="text" id="share-url-input" readonly class="w-full bg-transparent text-xs font-code text-on-surface focus:outline-none select-all"/>
+        <button onclick="copyShareLink()" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-code font-bold text-xs flex items-center gap-1 shrink-0">
+          <span class="material-symbols-outlined text-[16px]">content_copy</span>
+          Copiar
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-1 font-code text-xs">
+        <button onclick="shareViaWhatsApp()" class="py-2.5 rounded-xl bg-[#25D366]/20 border border-[#25D366]/40 text-[#25D366] font-bold flex items-center justify-center gap-1.5 hover:bg-[#25D366]/30 transition-colors">
+          <span>💬</span>
+          <span>WhatsApp</span>
+        </button>
+        <button onclick="shareViaTelegram()" class="py-2.5 rounded-xl bg-[#229ED9]/20 border border-[#229ED9]/40 text-[#229ED9] font-bold flex items-center justify-center gap-1.5 hover:bg-[#229ED9]/30 transition-colors">
+          <span>✈️</span>
+          <span>Telegram</span>
+        </button>
+      </div>
+
+      <button id="btn-native-share" onclick="shareViaNative()" class="hidden w-full py-2.5 rounded-xl bg-surface-container-high border border-border text-on-surface font-code text-xs font-bold items-center justify-center gap-1.5 hover:bg-surface-container transition-colors">
+        <span class="material-symbols-outlined text-[18px]">ios_share</span>
+        Compartir en otras apps
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: INSTALAR APP EN EL MÓVIL 📲         -->
+  <!-- ========================================== -->
+  <div id="install-modal-backdrop" class="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container rounded-2xl max-w-md w-full border border-border shadow-2xl p-5 flex flex-col gap-4 font-body">
+      <div class="flex items-center justify-between border-b border-border pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-[24px]">install_mobile</span>
+          <div class="flex flex-col">
+            <span class="font-headline font-bold text-base text-on-surface">Instalar Vía Libre CTC</span>
+            <span class="text-xs text-on-surface-variant font-code">Acceso rápido sin barras de navegador</span>
+          </div>
+        </div>
+        <button onclick="closeInstallModal()" class="p-1 rounded text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-3 text-xs text-on-surface">
+        <div class="p-3 rounded-xl bg-surface-container-lowest border border-border flex flex-col gap-1.5">
+          <div class="flex items-center gap-2 font-bold text-primary font-code">
+            <span>🤖</span> En Android (Google Chrome):
+          </div>
+          <p class="text-on-surface-variant">Toca los 3 puntos (<b>⋮</b>) arriba a la derecha en Chrome y pulsa en <b>"Instalar aplicación"</b> o <i>"Añadir a pantalla de inicio"</i>.</p>
+        </div>
+
+        <div class="p-3 rounded-xl bg-surface-container-lowest border border-border flex flex-col gap-1.5">
+          <div class="flex items-center gap-2 font-bold text-[#38bdf8] font-code">
+            <span>🍏</span> En iPhone / iPad (Safari):
+          </div>
+          <p class="text-on-surface-variant">Toca el botón <b>Compartir</b> (el cuadrado con la flecha hacia arriba <b>↑</b> en la barra inferior) y elige <b>"Añadir a pantalla de inicio"</b>.</p>
+        </div>
+      </div>
+
+      <button id="pwa-native-install-btn" onclick="triggerPwaPrompt()" class="hidden w-full py-2.5 rounded-xl bg-primary text-on-primary font-code font-bold text-xs flex items-center justify-center gap-1.5 shadow-md">
+        <span class="material-symbols-outlined text-[18px]">download</span>
+        Instalar Ahora
+      </button>
+      <button onclick="closeInstallModal()" class="w-full py-2 rounded-xl bg-surface-container-high text-on-surface-variant font-code text-xs">Cerrar</button>
+    </div>
+  </div>
 </body>
 </html>
