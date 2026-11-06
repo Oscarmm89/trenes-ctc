@@ -143,91 +143,77 @@
     .leaflet-popup-tip { background: var(--color-surface-container) !important; }
     .leaflet-popup-close-button { color: var(--color-on-surface-variant) !important; top: 8px !important; right: 8px !important; font-size: 16px !important; }
 
-    .leaflet-control-attribution {
-      background: rgba(17, 19, 26, 0.8) !important;
-      color: #8e94a0 !important;
-      font-family: 'JetBrains Mono', monospace !important;
-      font-size: 9px !important;
-      padding: 2px 6px !important;
-      border-radius: 4px !important;
-      margin: 6px !important;
+    /* MARCADORES COMPACTOS DE TRENES (LIMPIEZA TÁCTICA SIN SOLAPAMIENTOS) */
+    .train-tactical-marker {
+      width: 24px;
+      height: 24px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(17, 19, 26, 0.94);
+      border: 2px solid var(--marker-color, #00e599);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+      color: #ffffff;
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+      position: relative;
     }
-    body.light-theme .leaflet-control-attribution {
-      background: rgba(255, 255, 255, 0.85) !important;
-      color: #475569 !important;
+    body.light-theme .train-tactical-marker {
+      background: #ffffff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    .train-tactical-marker:hover,
+    .train-tactical-marker.selected {
+      transform: scale(1.4);
+      z-index: 1000 !important;
+      box-shadow: 0 0 18px var(--marker-color, #00e599);
+    }
+    .train-tactical-marker.danger-stop {
+      border-color: #ff334b !important;
+      animation: pulse-danger-marker 1.4s infinite;
+    }
+    @keyframes pulse-danger-marker {
+      0%, 100% { box-shadow: 0 0 0 rgba(255, 51, 75, 0.6); }
+      50% { box-shadow: 0 0 18px rgba(255, 51, 75, 1); transform: scale(1.25); }
+    }
+    .train-tactical-marker.is-fav::after {
+      content: '❤️';
+      position: absolute;
+      top: -10px;
+      right: -8px;
+      font-size: 11px;
     }
 
-    /* Custom Train Markers */
-    .train-marker-pill {
+    /* MARCADOR DE ESTACIÓN (CASITA / ICONO FERROVIARIO) */
+    .station-marker-pill {
+      background: rgba(22, 24, 32, 0.88);
+      border: 1px solid rgba(142, 148, 160, 0.4);
+      border-radius: 6px;
+      padding: 2px 5px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 3px 8px;
-      border-radius: 6px;
-      background: rgba(17, 19, 26, 0.92);
-      backdrop-filter: blur(6px);
-      border: 1px solid rgba(0, 229, 153, 0.7);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
-      color: #ffffff;
+      gap: 3px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: 9px;
       font-weight: 700;
+      color: #cbd5e1;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
       white-space: nowrap;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
       cursor: pointer;
-      user-select: none;
+      transition: transform 0.15s ease;
     }
-    body.light-theme .train-marker-pill {
-      background: rgba(255, 255, 255, 0.95);
-      color: #0f172a;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-      border-color: #047857;
+    body.light-theme .station-marker-pill {
+      background: rgba(255, 255, 255, 0.92);
+      border-color: #94a3b8;
+      color: #1e293b;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
-    .train-marker-pill:hover,
-    .train-marker-pill.selected {
-      transform: scale(1.12);
+    .station-marker-pill:hover {
+      transform: scale(1.15);
       border-color: #00e599;
-      box-shadow: 0 0 20px rgba(0, 229, 153, 0.8);
-      z-index: 1000 !important;
-    }
-    .train-marker-pill.stopped-station {
-      border-color: rgba(255, 189, 88, 0.85);
-    }
-    .train-marker-pill.stopped-track {
-      border-color: #ff334b !important;
-      background: rgba(45, 10, 15, 0.95) !important;
-      color: #ffdad6 !important;
-      animation: pulse-danger 1.5s infinite;
-    }
-    @keyframes pulse-danger {
-      0%, 100% { box-shadow: 0 0 0 rgba(255, 51, 75, 0.6); }
-      50% { box-shadow: 0 0 18px rgba(255, 51, 75, 0.95); }
-    }
-
-    .train-beacon-pulse {
-      position: relative;
-      display: flex;
-      width: 7px;
-      height: 7px;
-    }
-    .train-beacon-pulse .ping {
-      position: absolute;
-      display: inline-flex;
-      height: 100%;
-      width: 100%;
-      border-radius: 9999px;
-      opacity: 0.75;
-      animation: ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
-    }
-    .train-beacon-pulse .dot {
-      position: relative;
-      display: inline-flex;
-      border-radius: 9999px;
-      height: 7px;
-      width: 7px;
-    }
-    @keyframes ping {
-      75%, 100% { transform: scale(2.2); opacity: 0; }
+      color: #00e599;
+      z-index: 900 !important;
     }
 
     /* Animaciones Bottom Sheet */
@@ -238,6 +224,42 @@
       transform: translateY(105%);
     }
 
+    /* Toasts de Notificaciones */
+    #notification-toast-container {
+      position: fixed;
+      top: 70px;
+      right: 16px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast-msg {
+      pointer-events: auto;
+      background: rgba(17, 19, 26, 0.95);
+      border: 1px solid var(--color-primary);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      color: #ffffff;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-family: 'Geist', sans-serif;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slide-in-toast 0.3s ease-out;
+    }
+    body.light-theme .toast-msg {
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    @keyframes slide-in-toast {
+      from { transform: translateX(110%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
     /* Mobile Safe Area Padding */
     .safe-pb {
       padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -246,6 +268,9 @@
 </head>
 
 <body class="bg-surface font-body text-on-surface antialiased h-full flex flex-col selection:bg-primary selection:text-on-primary">
+
+  <!-- TOASTS DE NOTIFICACIÓN FLOTANTES -->
+  <div id="notification-toast-container"></div>
 
   <!-- ========================================== -->
   <!-- DRAWER LATERAL: MENÚ CTC (Desktop y Móvil) -->
@@ -295,6 +320,19 @@
           <span class="text-sm">Registro de Tráfico</span>
         </button>
       </nav>
+
+      <!-- Panel de Opciones de Visualización en el Mapa -->
+      <div class="px-4 py-3 mt-2 border-t border-border flex flex-col gap-2">
+        <span class="font-code text-[10px] uppercase tracking-wider text-on-surface-variant font-bold">Capas de Infraestructura</span>
+        <label class="flex items-center justify-between text-xs font-code cursor-pointer">
+          <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-primary">alt_route</span> Vías Férreas (LAV)</span>
+          <input type="checkbox" id="toggle-tracks-checkbox" checked onchange="toggleRailwayTracks(this.checked)" class="accent-primary"/>
+        </label>
+        <label class="flex items-center justify-between text-xs font-code cursor-pointer">
+          <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-secondary">domain</span> Estaciones (🏠)</span>
+          <input type="checkbox" id="toggle-stations-checkbox" checked onchange="toggleStationMarkers(this.checked)" class="accent-primary"/>
+        </label>
+      </div>
     </div>
 
     <!-- Subsystem Status Widget -->
@@ -311,11 +349,8 @@
         <span id="sidebar-trains-count" class="text-on-surface font-bold">--</span>
       </div>
       <div class="flex items-center justify-between font-code text-[11px] text-on-surface-variant">
-        <span>LATENCIA DE CANAL</span>
-        <span id="api-latency-badge" class="text-on-surface font-bold">-- ms</span>
-      </div>
-      <div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mt-1">
-        <div id="connection-progress" class="bg-primary h-full w-[100%] transition-all duration-300"></div>
+        <span>SEGUIMIENTO ACTIVO</span>
+        <span id="sidebar-favs-count" class="text-primary font-bold">0 trenes ❤️</span>
       </div>
     </div>
   </aside>
@@ -381,10 +416,10 @@
       </div>
     </header>
 
-    <!-- BANNER DE ALERTA DE ALCANCE / SEGURIDAD (Oculto por defecto) -->
-    <div id="safety-alert-banner" class="hidden bg-danger text-white px-4 py-2 text-xs sm:text-sm font-code font-bold z-30 flex items-center justify-between shadow-lg animate-pulse">
+    <!-- BANNER DE ALERTA DE ALCANCE / SEGURIDAD (Solo salta si hay una detención crítica confirmada) -->
+    <div id="safety-alert-banner" class="hidden bg-danger text-white px-4 py-2 text-xs sm:text-sm font-code font-bold z-30 flex items-center justify-between shadow-lg">
       <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-[20px]">warning</span>
+        <span class="material-symbols-outlined text-[20px] animate-pulse">warning</span>
         <span id="safety-alert-text">ALERTA ASFA: Distancia de cantón crítica detectada</span>
       </div>
       <button onclick="dismissSafetyAlert()" class="p-1 hover:bg-white/20 rounded">
@@ -400,7 +435,7 @@
       <!-- ========================================== -->
       <div id="view-supervision" class="view-panel flex-1 flex flex-col lg:grid lg:grid-cols-12 w-full h-full relative overflow-hidden">
         
-        <!-- PANEL LATERAL TELEMETRÍA (Desktop: 4 columnas / Móvil: Oculto a favor del mapa full-screen) -->
+        <!-- PANEL LATERAL TELEMETRÍA (Desktop: 4 columnas / Móvil: Oculto para dejar el mapa libre) -->
         <div class="hidden lg:flex lg:col-span-4 xl:col-span-4 h-full bg-surface-container-low flex-col border-r border-border overflow-hidden">
           
           <!-- Cabecera de búsqueda y filtros -->
@@ -418,10 +453,11 @@
             <!-- Chips de Filtro Rápido -->
             <div class="flex items-center gap-1.5 overflow-x-auto ctc-scrollbar py-0.5" id="desktop-filter-chips">
               <button class="filter-chip active px-2.5 py-1 rounded-full text-[11px] font-code font-bold bg-primary text-on-primary transition-all whitespace-nowrap" data-cat="ALL" onclick="setCategoryFilter('ALL')">TODOS (<span id="cnt-all">0</span>)</button>
+              <button class="filter-chip px-2.5 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-all whitespace-nowrap" data-cat="FAV" onclick="setCategoryFilter('FAV')">❤️ Mis Trenes (<span id="cnt-favs">0</span>)</button>
               <button class="filter-chip px-2.5 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-all whitespace-nowrap" data-cat="AVE" onclick="setCategoryFilter('AVE')">AVE (<span id="cnt-ave">0</span>)</button>
               <button class="filter-chip px-2.5 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-all whitespace-nowrap" data-cat="AVLO" onclick="setCategoryFilter('AVLO')">Avlo (<span id="cnt-avlo">0</span>)</button>
               <button class="filter-chip px-2.5 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-all whitespace-nowrap" data-cat="ALVIA" onclick="setCategoryFilter('ALVIA')">Alvia (<span id="cnt-alvia">0</span>)</button>
-              <button class="filter-chip px-2.5 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-all whitespace-nowrap" data-cat="STOPPED" onclick="setCategoryFilter('STOPPED')">🔴 Parados</button>
+              <button class="filter-chip px-2.5 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container-high text-danger hover:bg-danger/20 transition-all whitespace-nowrap" data-cat="STOPPED" onclick="setCategoryFilter('STOPPED')">🔴 Parados Confirmados</button>
             </div>
           </div>
 
@@ -440,12 +476,12 @@
         <!-- ÁREA DEL MAPA (Ocupa 100% en móvil y 8 columnas en desktop) -->
         <div class="lg:col-span-8 xl:col-span-8 flex-1 h-full relative overflow-hidden flex flex-col">
           
-          <!-- BARRA SUPERIOR FLOTANTE SOBRE EL MAPA (Para móvil y accesos rápidos) -->
+          <!-- BARRA SUPERIOR FLOTANTE SOBRE EL MAPA (Limpia y táctil) -->
           <div class="absolute top-2 left-2 right-2 sm:left-4 sm:right-4 z-20 flex flex-col gap-1.5 pointer-events-none">
             <!-- Input de búsqueda táctil en móvil -->
             <div class="pointer-events-auto bg-surface-container/95 backdrop-blur-md p-1.5 sm:p-2 rounded-xl border border-border shadow-xl flex items-center gap-2">
               <span class="material-symbols-outlined text-primary text-[20px] ml-1">search</span>
-              <input type="text" id="mobile-search-input" placeholder="Buscar ciudad, destino, AVE (Sevilla, Barcelona, Alvia...)" 
+              <input type="text" id="mobile-search-input" placeholder="Buscar ciudad o tren (Sevilla, Barcelona, AVE...)" 
                 class="flex-1 bg-transparent text-on-surface text-xs sm:text-sm font-code placeholder:text-on-surface-variant focus:outline-none"
                 oninput="handleSearch(this.value)"/>
               <button id="clear-search-btn-mobile" class="p-1 text-on-surface-variant hover:text-on-surface hidden" onclick="clearSearch()">
@@ -459,23 +495,36 @@
             <!-- Filtros rápidos horizontales sobre el mapa -->
             <div class="pointer-events-auto flex items-center gap-1.5 overflow-x-auto ctc-scrollbar pb-1 px-0.5">
               <button class="quick-pill active px-3 py-1 rounded-full text-[11px] font-code font-bold bg-primary text-on-primary shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="ALL" onclick="setQuickPill('ALL')">🚄 Todos</button>
+              <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-on-surface border border-border shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="FAVS" onclick="setQuickPill('FAVS')">❤️ Mis Trenes</button>
               <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-on-surface border border-border shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="AVE" onclick="setQuickPill('AVE')">⚡ AVE/Avlo</button>
               <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-on-surface border border-border shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="MADRID" onclick="setQuickPill('MADRID')">📍 Madrid</button>
               <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-on-surface border border-border shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="BARCELONA" onclick="setQuickPill('BARCELONA')">📍 Barcelona</button>
               <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-on-surface border border-border shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="SUR" onclick="setQuickPill('SUR')">📍 Andalucía</button>
               <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-on-surface border border-border shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="LEVANTE" onclick="setQuickPill('LEVANTE')">📍 Valencia</button>
-              <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-danger border border-danger/40 shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="PARADOS" onclick="setQuickPill('PARADOS')">🔴 Parados en Vía</button>
+              <button class="quick-pill px-3 py-1 rounded-full text-[11px] font-code font-bold bg-surface-container/90 text-danger border border-danger/40 shadow-md whitespace-nowrap transition-transform active:scale-95" data-filter="PARADOS" onclick="setQuickPill('PARADOS')">🔴 Parados Confirmados</button>
             </div>
           </div>
 
           <!-- CONTENEDOR LEAFLET MAP -->
           <div id="leaflet-map" class="flex-1 w-full h-full"></div>
 
+          <!-- BOTONES FLOTANTES DE CAPAS EN EL MAPA -->
+          <div class="absolute bottom-20 sm:bottom-4 left-3 z-20 pointer-events-auto flex items-center gap-1.5 bg-surface-container/90 backdrop-blur-md p-1.5 rounded-xl border border-border shadow-lg font-code text-xs">
+            <button id="btn-toggle-tracks" onclick="toggleTracksBtn()" class="px-2.5 py-1 rounded-lg bg-primary/20 text-primary font-bold flex items-center gap-1 transition-colors" title="Ver/Ocultar Vías Férreas">
+              <span class="material-symbols-outlined text-[16px]">alt_route</span>
+              <span class="hidden sm:inline">Vías</span>
+            </button>
+            <button id="btn-toggle-stations" onclick="toggleStationsBtn()" class="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface font-bold flex items-center gap-1 transition-colors" title="Ver/Ocultar Estaciones">
+              <span class="material-symbols-outlined text-[16px]">domain</span>
+              <span class="hidden sm:inline">Estaciones</span>
+            </button>
+          </div>
+
           <!-- LEYENDA FLOTANTE INFERIOR DERECHA -->
           <div class="absolute bottom-20 sm:bottom-4 right-3 z-20 pointer-events-auto bg-surface-container/90 backdrop-blur-md px-3 py-2 rounded-xl border border-border shadow-lg font-code text-[10px] hidden sm:flex flex-col gap-1 text-on-surface-variant">
-            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-primary"></span><span>En marcha (>150 km/h)</span></div>
-            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-secondary"></span><span>Detenido en estación</span></div>
-            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-danger animate-pulse"></span><span>Detenido en plena vía</span></div>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-primary"></span><span>En marcha</span></div>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-secondary"></span><span>En andén / Estación</span></div>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-danger animate-pulse"></span><span>Detenido en plena vía (5+ ciclos)</span></div>
           </div>
         </div>
 
@@ -538,9 +587,9 @@
           <div>
             <h2 class="font-headline font-bold text-xl sm:text-2xl text-on-surface flex items-center gap-2">
               <span class="material-symbols-outlined text-danger text-[26px]">warning</span>
-              Supervisión de Incidencias y Paradas
+              Supervisión de Incidencias Confirmadas
             </h2>
-            <p class="text-xs sm:text-sm text-on-surface-variant font-code">Detección de paradas en plena vía y trenes con detención prolongada</p>
+            <p class="text-xs sm:text-sm text-on-surface-variant font-code">Filtro con validación de 5 actualizaciones consecutivas (75s de confirmación)</p>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -552,17 +601,17 @@
             <div class="bg-surface-container p-4 rounded-xl border border-border">
               <span class="text-xs text-on-surface-variant block font-code uppercase">Detenidos en Plena Vía</span>
               <span id="incidencias-stopped-track-count" class="font-headline text-2xl font-bold text-danger">--</span>
-              <span class="text-[11px] text-on-surface-variant block mt-0.5">Alarma: Sin andén próximo</span>
+              <span class="text-[11px] text-on-surface-variant block mt-0.5">Confirmados > 75 seg</span>
             </div>
             <div class="bg-surface-container p-4 rounded-xl border border-border">
               <span class="text-xs text-on-surface-variant block font-code uppercase">Puntualidad Global</span>
-              <span class="font-headline text-2xl font-bold text-primary">96.4%</span>
-              <span class="text-[11px] text-on-surface-variant block mt-0.5">Líneas UIC operativas</span>
+              <span class="font-headline text-2xl font-bold text-primary">96.8%</span>
+              <span class="text-[11px] text-on-surface-variant block mt-0.5">Red de Alta Velocidad</span>
             </div>
           </div>
 
           <div class="bg-surface-container rounded-2xl p-4 sm:p-6 border border-border flex flex-col gap-3">
-            <h3 class="font-headline font-bold text-base text-on-surface">Listado de Trenes con Detención o Anormalidad</h3>
+            <h3 class="font-headline font-bold text-base text-on-surface">Listado de Trenes con Detención Prolongada</h3>
             <div id="incidencias-list" class="flex flex-col gap-2">
               <!-- Rellenado dinámicamente -->
             </div>
@@ -578,7 +627,7 @@
           <div class="flex items-center justify-between border-b border-border pb-3 mb-3">
             <div class="flex items-center gap-2">
               <span class="material-symbols-outlined text-primary text-[20px]">terminal</span>
-              <span class="font-bold text-on-surface">Consola de Eventos en Tiempo Real</span>
+              <span class="font-bold text-on-surface">Consola de Eventos y Notificaciones</span>
             </div>
             <button onclick="clearEventLogs()" class="px-2.5 py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface text-[11px]">Limpiar</button>
           </div>
@@ -619,6 +668,70 @@
   </div>
 
   <!-- ========================================== -->
+  <!-- MODAL: CONFIGURAR NOTIFICACIONES VIAJE ❤️ -->
+  <!-- ========================================== -->
+  <div id="follow-modal-backdrop" class="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container rounded-2xl max-w-md w-full border border-border shadow-2xl p-5 flex flex-col gap-4 font-body animate-in">
+      <div class="flex items-center justify-between border-b border-border pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">❤️</span>
+          <div class="flex flex-col">
+            <span class="font-headline font-bold text-base text-on-surface" id="modal-train-name">Seguimiento de Tren</span>
+            <span class="text-xs text-on-surface-variant font-code" id="modal-train-route">Itinerario Comercial</span>
+          </div>
+        </div>
+        <button onclick="closeFollowModal()" class="p-1 rounded text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <p class="text-xs text-on-surface-variant">Selecciona cuándo deseas recibir alertas automáticas en tu dispositivo durante este viaje:</p>
+
+      <div class="flex flex-col gap-2.5 font-code text-xs">
+        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-surface-container-lowest border border-border cursor-pointer">
+          <input type="checkbox" id="pref-stop-arrival" checked class="mt-0.5 accent-primary"/>
+          <div class="flex flex-col">
+            <span class="font-bold text-on-surface">Llegada a estaciones intermedias</span>
+            <span class="text-[11px] text-on-surface-variant">Aviso al entrar en cada estación del recorrido</span>
+          </div>
+        </label>
+
+        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-surface-container-lowest border border-border cursor-pointer">
+          <input type="checkbox" id="pref-before-stop" checked class="mt-0.5 accent-primary"/>
+          <div class="flex flex-col">
+            <span class="font-bold text-on-surface">Aviso 5 minutos / 10 km antes</span>
+            <span class="text-[11px] text-on-surface-variant">Alerta previa de aproximación para preparar equipaje</span>
+          </div>
+        </label>
+
+        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-surface-container-lowest border border-border cursor-pointer">
+          <input type="checkbox" id="pref-delays" checked class="mt-0.5 accent-primary"/>
+          <div class="flex flex-col">
+            <span class="font-bold text-on-surface">Incidencias y retrasos</span>
+            <span class="text-[11px] text-on-surface-variant">Aviso si el tren se detiene en vía o sufre demora > 5 min</span>
+          </div>
+        </label>
+
+        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-surface-container-lowest border border-border cursor-pointer">
+          <input type="checkbox" id="pref-destination" checked class="mt-0.5 accent-primary"/>
+          <div class="flex flex-col">
+            <span class="font-bold text-on-surface">Llegada a destino final</span>
+            <span class="text-[11px] text-on-surface-variant">Notifica la llegada definitiva y cancela el seguimiento</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="flex items-center gap-2 pt-2 border-t border-border">
+        <button onclick="confirmFollowTrain()" class="flex-1 py-2.5 rounded-xl bg-primary text-on-primary font-code font-bold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-98">
+          <span class="material-symbols-outlined text-[18px]">favorite</span>
+          Activar Seguimiento
+        </button>
+        <button onclick="closeFollowModal()" class="px-4 py-2.5 rounded-xl bg-surface-container-high text-on-surface font-code text-xs">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
   <!-- FICHA TÉCNICA 360°: BOTTOM SHEET TÁCTIL   -->
   <!-- ========================================== -->
   <div id="bottom-sheet" class="closed fixed bottom-0 left-0 right-0 xl:left-auto xl:right-6 xl:bottom-6 xl:w-[420px] bg-surface-container/98 backdrop-blur-xl border-t xl:border border-border xl:rounded-2xl shadow-[0_-8px_35px_rgba(0,0,0,0.5)] z-50 flex flex-col max-h-[85vh] xl:max-h-[640px] safe-pb overflow-hidden">
@@ -633,12 +746,17 @@
       <div class="flex items-center gap-2.5">
         <span id="sheet-brand-badge" class="px-2.5 py-1 rounded-md text-xs font-code font-bold bg-primary/20 text-primary border border-primary/30">AVE</span>
         <div class="flex flex-col">
-          <span id="sheet-train-title" class="font-headline font-bold text-base text-on-surface leading-tight">AVE 03112</span>
+          <div class="flex items-center gap-1.5">
+            <span id="sheet-train-title" class="font-headline font-bold text-base text-on-surface leading-tight">AVE 03112</span>
+            <button id="sheet-fav-btn" onclick="toggleFavoriteActiveTrain()" class="text-base text-on-surface-variant hover:text-red-500 transition-colors" title="Seguir este tren (❤️)">
+              🤍
+            </button>
+          </div>
           <span id="sheet-train-series" class="font-code text-[11px] text-on-surface-variant">Siemens Velaro S-103</span>
         </div>
       </div>
       <div class="flex items-center gap-1.5">
-        <button id="sheet-follow-btn" onclick="toggleFollowActiveTrain()" class="p-2 rounded-lg bg-surface-container-high text-on-surface-variant hover:text-primary transition-colors" title="Cámara de seguimiento">
+        <button id="sheet-follow-btn" onclick="toggleCameraActiveTrain()" class="p-2 rounded-lg bg-surface-container-high text-on-surface-variant hover:text-primary transition-colors" title="Cámara de seguimiento">
           <span class="material-symbols-outlined text-[18px]">videocam</span>
         </button>
         <button onclick="closeBottomSheet()" class="p-2 rounded-lg bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors" title="Cerrar ficha">
@@ -652,7 +770,7 @@
       
       <!-- Trayecto Principal: Origen ➔ Destino -->
       <div class="p-3 bg-surface-container-lowest rounded-xl border border-border flex flex-col gap-2">
-        <span class="font-code text-[10px] uppercase text-on-surface-variant font-bold tracking-wider">Itinerario Comercial</span>
+        <span class="font-code text-[10px] uppercase text-on-surface-variant font-bold tracking-wider">Itinerario Comercial Oficial</span>
         <div class="flex items-center justify-between font-headline font-bold text-sm text-on-surface">
           <span id="sheet-origin" class="text-primary truncate max-w-[45%]">Madrid Puerta de Atocha</span>
           <span class="material-symbols-outlined text-on-surface-variant text-[16px] shrink-0">arrow_forward</span>
@@ -686,12 +804,12 @@
         </div>
       </div>
 
-      <!-- Alerta de Parada en Plena Vía (si aplica) -->
+      <!-- Alerta de Parada en Plena Vía (solo si confirmada > 5 ciclos) -->
       <div id="sheet-track-alert" class="hidden p-3 rounded-xl bg-danger/15 border border-danger/40 text-danger flex items-start gap-2">
         <span class="material-symbols-outlined text-[20px] shrink-0 mt-0.5">report_problem</span>
         <div class="flex flex-col text-[11px] font-code">
-          <span class="font-bold">¡ALERTA CTC: PARADA EN PLENA VÍA!</span>
-          <span id="sheet-track-alert-desc">Tren detenido a más de 1 km de cualquier estación oficial.</span>
+          <span class="font-bold">¡DETENCIÓN PROLONGADA EN PLENA VÍA!</span>
+          <span id="sheet-track-alert-desc">Confirmado parado durante más de 75 segundos sin andén próximo.</span>
         </div>
       </div>
 
@@ -716,11 +834,17 @@
         </div>
       </div>
 
-      <!-- Botón de acción: Centrar en Mapa -->
-      <button onclick="centerOnActiveTrain()" class="w-full py-2.5 rounded-xl bg-primary text-on-primary font-code font-bold text-xs flex items-center justify-center gap-2 shadow-lg active:scale-98 transition-all">
-        <span class="material-symbols-outlined text-[18px]">center_focus_strong</span>
-        Centrar en Mapa
-      </button>
+      <!-- Botones de acción -->
+      <div class="flex items-center gap-2">
+        <button onclick="centerOnActiveTrain()" class="flex-1 py-2.5 rounded-xl bg-primary text-on-primary font-code font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg active:scale-98 transition-all">
+          <span class="material-symbols-outlined text-[18px]">center_focus_strong</span>
+          Centrar
+        </button>
+        <button id="sheet-fav-btn-action" onclick="toggleFavoriteActiveTrain()" class="py-2.5 px-4 rounded-xl bg-surface-container-high border border-border text-on-surface font-code font-bold text-xs flex items-center gap-1.5 hover:border-red-500 transition-colors">
+          <span>❤️</span>
+          <span>Seguir</span>
+        </button>
+      </div>
 
     </div>
   </div>
@@ -729,46 +853,120 @@
   <!-- JAVASCRIPT: LÓGICA COMPLETA DEL SISTEMA    -->
   <!-- ========================================== -->
   <script>
-    // --- ESTACIONES OFICIALES CON COORDENADAS GPS EXACTAS ---
+    // --- ESTACIONES OFICIALES DE ESPAÑA (CASITAS 🏠) ---
     const STATIONS_GEO = {
-      '17000': { name: 'Madrid Chamartín Clara Campoamor', lat: 40.4720, lng: -3.6825, city: 'Madrid' },
-      '18000': { name: 'Madrid Puerta de Atocha Almudena Grandes', lat: 40.4065, lng: -3.6903, city: 'Madrid' },
-      '60000': { name: 'Madrid Puerta de Atocha', lat: 40.4065, lng: -3.6903, city: 'Madrid' },
-      '71801': { name: 'Barcelona Sants', lat: 41.3790, lng: 2.1400, city: 'Barcelona' },
-      '79202': { name: 'Barcelona França', lat: 41.3842, lng: 2.1872, city: 'Barcelona' },
-      '60911': { name: 'València Joaquín Sorolla', lat: 39.4589, lng: -0.3807, city: 'Valencia' },
-      '60900': { name: 'València Nord', lat: 39.4667, lng: -0.3772, city: 'Valencia' },
-      '51003': { name: 'Sevilla Santa Justa', lat: 37.3917, lng: -5.9753, city: 'Sevilla' },
-      '04000': { name: 'Málaga María Zambrano', lat: 36.7118, lng: -4.4326, city: 'Málaga' },
-      '54413': { name: 'Málaga María Zambrano', lat: 36.7118, lng: -4.4326, city: 'Málaga' },
-      '02003': { name: 'Córdoba Central', lat: 37.8887, lng: -4.7898, city: 'Córdoba' },
-      '70600': { name: 'Zaragoza Delicias', lat: 41.6589, lng: -0.9125, city: 'Zaragoza' },
-      '31205': { name: 'Zaragoza Delicias', lat: 41.6589, lng: -0.9125, city: 'Zaragoza' },
-      '35000': { name: 'Alicante / Alacant Terminal', lat: 38.3444, lng: -0.4950, city: 'Alicante' },
-      '60905': { name: 'Alicante Terminal', lat: 38.3444, lng: -0.4950, city: 'Alicante' },
-      '03208': { name: 'Cuenca Fernando Zóbel', lat: 40.0381, lng: -2.1497, city: 'Cuenca' },
-      '03216': { name: 'Requena-Utiel', lat: 39.4975, lng: -1.1342, city: 'Requena' },
-      '01009': { name: 'Antequera Santa Ana', lat: 37.0706, lng: -4.7170, city: 'Antequera' },
-      '65300': { name: 'Castelló de la Plana', lat: 39.9880, lng: -0.0525, city: 'Castellón' },
-      '11200': { name: 'Valladolid Campo Grande', lat: 41.6425, lng: -4.7297, city: 'Valladolid' },
-      '14100': { name: 'Palencia', lat: 42.0150, lng: -4.5340, city: 'Palencia' },
-      '14223': { name: 'Segovia Guiomar', lat: 40.9083, lng: -4.0994, city: 'Segovia' },
-      '15100': { name: 'León', lat: 42.5975, lng: -5.5828, city: 'León' },
-      '15211': { name: 'Oviedo', lat: 43.3667, lng: -5.8522, city: 'Oviedo' },
-      '16000': { name: 'Burgos Rosa Manzano', lat: 42.3686, lng: -3.6692, city: 'Burgos' },
-      '31400': { name: 'Lleida Pirineus', lat: 41.6214, lng: 0.6322, city: 'Lleida' },
-      '71500': { name: 'Camp de Tarragona', lat: 41.1925, lng: 1.2561, city: 'Tarragona' },
-      '79300': { name: 'Girona', lat: 41.9792, lng: 2.8172, city: 'Girona' },
-      '79303': { name: 'Girona', lat: 41.9792, lng: 2.8172, city: 'Girona' },
-      '79304': { name: 'Girona', lat: 41.9792, lng: 2.8172, city: 'Girona' },
-      '79500': { name: 'Figueres-Vilafant', lat: 42.2661, lng: 2.9469, city: 'Figueres' },
-      '21000': { name: 'Ourense', lat: 42.3486, lng: -7.8697, city: 'Ourense' },
-      '31412': { name: 'Santiago de Compostela', lat: 42.8711, lng: -8.5444, city: 'Santiago' },
-      '23000': { name: 'A Coruña', lat: 43.3528, lng: -8.4111, city: 'A Coruña' },
-      '61303': { name: 'Murcia del Carmen', lat: 37.9744, lng: -1.1306, city: 'Murcia' },
-      '61304': { name: 'Cartagena', lat: 37.6052, lng: -0.9748, city: 'Cartagena' },
-      '60600': { name: 'Albacete Los Llanos', lat: 38.9994, lng: -1.8497, city: 'Albacete' }
+      '17000': { name: 'Madrid Chamartín Clara Campoamor', lat: 40.4720, lng: -3.6825, city: 'Madrid', type: 'terminal' },
+      '18000': { name: 'Madrid Puerta de Atocha Almudena Grandes', lat: 40.4065, lng: -3.6903, city: 'Madrid', type: 'terminal' },
+      '60000': { name: 'Madrid Puerta de Atocha', lat: 40.4065, lng: -3.6903, city: 'Madrid', type: 'terminal' },
+      '71801': { name: 'Barcelona Sants', lat: 41.3790, lng: 2.1400, city: 'Barcelona', type: 'terminal' },
+      '79202': { name: 'Barcelona França', lat: 41.3842, lng: 2.1872, city: 'Barcelona', type: 'terminal' },
+      '60911': { name: 'València Joaquín Sorolla', lat: 39.4589, lng: -0.3807, city: 'Valencia', type: 'terminal' },
+      '60900': { name: 'València Nord', lat: 39.4667, lng: -0.3772, city: 'Valencia', type: 'terminal' },
+      '51003': { name: 'Sevilla Santa Justa', lat: 37.3917, lng: -5.9753, city: 'Sevilla', type: 'terminal' },
+      '04000': { name: 'Málaga María Zambrano', lat: 36.7118, lng: -4.4326, city: 'Málaga', type: 'terminal' },
+      '54413': { name: 'Málaga María Zambrano', lat: 36.7118, lng: -4.4326, city: 'Málaga', type: 'terminal' },
+      '02003': { name: 'Córdoba Central', lat: 37.8887, lng: -4.7898, city: 'Córdoba', type: 'station' },
+      '70600': { name: 'Zaragoza Delicias', lat: 41.6589, lng: -0.9125, city: 'Zaragoza', type: 'station' },
+      '31205': { name: 'Zaragoza Delicias', lat: 41.6589, lng: -0.9125, city: 'Zaragoza', type: 'station' },
+      '35000': { name: 'Alicante Terminal', lat: 38.3444, lng: -0.4950, city: 'Alicante', type: 'terminal' },
+      '60905': { name: 'Alicante Terminal', lat: 38.3444, lng: -0.4950, city: 'Alicante', type: 'terminal' },
+      '03208': { name: 'Cuenca Fernando Zóbel', lat: 40.0381, lng: -2.1497, city: 'Cuenca', type: 'station' },
+      '03216': { name: 'Requena-Utiel', lat: 39.4975, lng: -1.1342, city: 'Requena', type: 'station' },
+      '01009': { name: 'Antequera Santa Ana', lat: 37.0706, lng: -4.7170, city: 'Antequera', type: 'station' },
+      '65300': { name: 'Castelló de la Plana', lat: 39.9880, lng: -0.0525, city: 'Castellón', type: 'station' },
+      '11200': { name: 'Valladolid Campo Grande', lat: 41.6425, lng: -4.7297, city: 'Valladolid', type: 'station' },
+      '14100': { name: 'Palencia', lat: 42.0150, lng: -4.5340, city: 'Palencia', type: 'station' },
+      '14223': { name: 'Segovia Guiomar', lat: 40.9083, lng: -4.0994, city: 'Segovia', type: 'station' },
+      '15100': { name: 'León', lat: 42.5975, lng: -5.5828, city: 'León', type: 'terminal' },
+      '15211': { name: 'Oviedo', lat: 43.3667, lng: -5.8522, city: 'Oviedo', type: 'terminal' },
+      '16000': { name: 'Burgos Rosa Manzano', lat: 42.3686, lng: -3.6692, city: 'Burgos', type: 'station' },
+      '31400': { name: 'Lleida Pirineus', lat: 41.6214, lng: 0.6322, city: 'Lleida', type: 'station' },
+      '71500': { name: 'Camp de Tarragona', lat: 41.1925, lng: 1.2561, city: 'Tarragona', type: 'station' },
+      '79300': { name: 'Girona', lat: 41.9792, lng: 2.8172, city: 'Girona', type: 'station' },
+      '79500': { name: 'Figueres-Vilafant', lat: 42.2661, lng: 2.9469, city: 'Figueres', type: 'terminal' },
+      '21000': { name: 'Ourense', lat: 42.3486, lng: -7.8697, city: 'Ourense', type: 'station' },
+      '31412': { name: 'Santiago de Compostela', lat: 42.8711, lng: -8.5444, city: 'Santiago', type: 'terminal' },
+      '23000': { name: 'A Coruña', lat: 43.3528, lng: -8.4111, city: 'A Coruña', type: 'terminal' },
+      '61303': { name: 'Murcia del Carmen', lat: 37.9744, lng: -1.1306, city: 'Murcia', type: 'terminal' },
+      '60600': { name: 'Albacete Los Llanos', lat: 38.9994, lng: -1.8497, city: 'Albacete', type: 'station' },
+      '37000': { name: 'Ciudad Real Central', lat: 38.9897, lng: -3.9189, city: 'Ciudad Real', type: 'station' },
+      '37100': { name: 'Puertollano', lat: 38.6908, lng: -4.1083, city: 'Puertollano', type: 'station' }
     };
+
+    // --- COORDENADAS OFICIALES DE LAS LÍNEAS DE ALTA VELOCIDAD (LAV ADIF) ---
+    const RAILWAY_CORRIDORS = [
+      {
+        id: 'lav-nordeste',
+        name: 'LAV Madrid - Zaragoza - Barcelona - Figueres',
+        color: '#38bdf8',
+        coords: [
+          [40.4065, -3.6903], [40.5750, -3.2350], [41.3520, -1.6390], 
+          [41.6589, -0.9125], [41.6214, 0.6322], [41.1925, 1.2561], 
+          [41.3790, 2.1400], [41.9792, 2.8172], [42.2661, 2.9469]
+        ]
+      },
+      {
+        id: 'lav-sur-sevilla',
+        name: 'LAV Madrid - Córdoba - Sevilla',
+        color: '#ffbd58',
+        coords: [
+          [40.4065, -3.6903], [39.8568, -3.9800], [38.9897, -3.9189], 
+          [38.6908, -4.1083], [37.8887, -4.7898], [37.3917, -5.9753]
+        ]
+      },
+      {
+        id: 'lav-sur-malaga',
+        name: 'Bifurcación Córdoba - Antequera - Málaga',
+        color: '#f59e0b',
+        coords: [
+          [37.8887, -4.7898], [37.4000, -4.7000], [37.0706, -4.7170], [36.7118, -4.4326]
+        ]
+      },
+      {
+        id: 'lav-levante-valencia',
+        name: 'LAV Madrid - Cuenca - València',
+        color: '#00e599',
+        coords: [
+          [40.4720, -3.6825], [40.4065, -3.6903], [40.0381, -2.1497], 
+          [39.4975, -1.1342], [39.4589, -0.3807]
+        ]
+      },
+      {
+        id: 'lav-levante-alicante',
+        name: 'Bifurcación Cuenca - Albacete - Alicante - Murcia',
+        color: '#10b981',
+        coords: [
+          [40.0381, -2.1497], [38.9994, -1.8497], [38.3444, -0.4950], [37.9744, -1.1306]
+        ]
+      },
+      {
+        id: 'lav-norte-leon',
+        name: 'LAV Madrid - Valladolid - León - Asturias',
+        color: '#c084fc',
+        coords: [
+          [40.4720, -3.6825], [40.9083, -4.0994], [41.6425, -4.7297], 
+          [42.0150, -4.5340], [42.5975, -5.5828], [43.3667, -5.8522]
+        ]
+      },
+      {
+        id: 'lav-noroeste-galicia',
+        name: 'LAV Olmedo - Zamora - Ourense - Santiago',
+        color: '#a855f7',
+        coords: [
+          [41.2800, -4.6800], [41.5030, -5.7440], [42.0000, -6.6300], 
+          [42.3486, -7.8697], [42.8711, -8.5444], [43.3528, -8.4111]
+        ]
+      },
+      {
+        id: 'corredor-mediterraneo',
+        name: 'Corredor Mediterráneo Barcelona - València - Alicante',
+        color: '#2dd4bf',
+        coords: [
+          [41.3790, 2.1400], [41.1150, 1.2500], [39.9880, -0.0525], 
+          [39.4589, -0.3807], [38.3444, -0.4950]
+        ]
+      }
+    ];
 
     // --- FUENTES DE DATOS ---
     const RENFE_FEED_URL = 'https://gtfsrt.renfe.com/vehicle_positions_LD.json';
@@ -782,15 +980,26 @@
     // --- ESTADO GLOBAL ---
     let map = null;
     let markersMap = new Map();
+    let railwayTracksLayers = [];
+    let stationMarkersLayers = [];
+    let showTracks = true;
+    let showStations = true;
+
     let trainsData = [];
     let previousPositions = new Map(); // id -> { lat, lng, time }
+    let stoppedCycleCounters = new Map(); // id -> consecutive cycles stopped
+
+    // SISTEMA DE FAVORITOS Y NOTIFICACIONES ❤️
+    let favoriteTrains = new Map(); // id -> { trainId, name, prefs: {} }
+
     let currentCategory = 'ALL';
     let currentSearchTerm = '';
     let currentTab = 'supervision';
     let selectedTrainId = null;
-    let followingTrainId = null;
+    let cameraFollowingId = null;
     let userLocationMarker = null;
     let safetyLineLayer = null;
+
     let activeSourceIndex = 0;
     let secondsUntilNextPoll = 15;
     let isFetching = false;
@@ -800,13 +1009,13 @@
 
     // --- INICIALIZACIÓN ---
     window.addEventListener('DOMContentLoaded', () => {
+      loadFavorites();
       initTheme();
       initSound();
       initMap();
       setupClock();
       fetchRenfeData();
 
-      // Temporizador de refresco
       setInterval(() => {
         secondsUntilNextPoll--;
         const badge = document.getElementById('refresh-countdown');
@@ -848,15 +1057,13 @@
         localStorage.setItem('ctc_theme', 'dark');
       }
 
-      // Actualizar estilo de marcadores si el mapa está listo
       if (map) updateMarkersStyle();
     }
 
     // --- SONIDO TÁCTICO CTC (WEB AUDIO API) ---
     let audioCtx = null;
     function initSound() {
-      const saved = localStorage.getItem('ctc_sound');
-      isSoundEnabled = (saved !== 'false');
+      isSoundEnabled = (localStorage.getItem('ctc_sound') !== 'false');
       updateSoundIcon();
     }
 
@@ -880,7 +1087,7 @@
 
         const now = audioCtx.currentTime;
         if (type === 'chime') {
-          // Clásico carillón de 3 notas de estación (F - A - C)
+          // Carillón 3 notas de estación
           [349.2, 440.0, 523.25].forEach((freq, i) => {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -894,7 +1101,7 @@
             osc.stop(now + i * 0.14 + 0.36);
           });
         } else if (type === 'alert') {
-          // Tono dual de advertencia de cantón
+          // Tono de alarma
           [587.3, 440.0].forEach((freq, i) => {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -922,7 +1129,7 @@
       } catch (e) {}
     }
 
-    // --- LEAFLET MAP ---
+    // --- LEAFLET MAP & CAPAS DE VÍAS Y ESTACIONES ---
     function initMap() {
       const spainCenter = [40.2085, -3.7130];
       const initialZoom = window.innerWidth < 768 ? 5 : 6;
@@ -937,18 +1144,133 @@
       L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
         maxZoom: 19,
         subdomains: ['a', 'b', 'c'],
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | Renfe GTFS-RT'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | Adif / Renfe'
       }).addTo(map);
 
+      // 1. Dibujar Vías Férreas de Alta Velocidad (LAV)
+      drawRailwayTracks();
+
+      // 2. Dibujar Estaciones (🏠)
+      drawStationMarkers();
+
       map.on('click', (e) => {
-        // Cierra bottom sheet al tocar mapa si no se tocó marcador
         if (!e.originalEvent._markerClicked) {
           closeBottomSheet();
         }
       });
     }
 
-    // --- CÁLCULO DE DISTANCIA (HAVERSINE KM) ---
+    // DIBUJAR VÍAS FÉRREAS EN EL MAPA
+    function drawRailwayTracks() {
+      for (const cor of RAILWAY_CORRIDORS) {
+        // Línea base oscura / exterior
+        const casing = L.polyline(cor.coords, {
+          color: '#000000',
+          weight: 4.5,
+          opacity: 0.5,
+          lineCap: 'round',
+          interactive: false
+        }).addTo(map);
+
+        // Línea de color de vía
+        const track = L.polyline(cor.coords, {
+          color: cor.color,
+          weight: 2.2,
+          opacity: 0.85,
+          dashArray: '8, 6',
+          lineCap: 'round',
+          interactive: true
+        }).addTo(map);
+
+        track.bindTooltip(`<b>${cor.name}</b>`, { sticky: true });
+        railwayTracksLayers.push(casing, track);
+      }
+    }
+
+    function toggleTracksBtn() {
+      showTracks = !showTracks;
+      railwayTracksLayers.forEach(l => {
+        if (showTracks) map.addLayer(l);
+        else map.removeLayer(l);
+      });
+      const btn = document.getElementById('btn-toggle-tracks');
+      if (btn) {
+        btn.classList.toggle('bg-primary/20', showTracks);
+        btn.classList.toggle('text-primary', showTracks);
+        btn.classList.toggle('bg-surface-container-high', !showTracks);
+        btn.classList.toggle('text-on-surface-variant', !showTracks);
+      }
+    }
+
+    function toggleRailwayTracks(checked) {
+      showTracks = checked;
+      railwayTracksLayers.forEach(l => {
+        if (showTracks) map.addLayer(l);
+        else map.removeLayer(l);
+      });
+    }
+
+    // DIBUJAR MARCADORES DE ESTACIONES (CASITA 🏠)
+    function drawStationMarkers() {
+      for (const [code, st] of Object.entries(STATIONS_GEO)) {
+        const iconHtml = `
+          <div class="station-marker-pill" title="${st.name}">
+            <span>🏛️</span>
+            <span>${st.city}</span>
+          </div>
+        `;
+
+        const icon = L.divIcon({
+          className: 'custom-station-icon',
+          html: iconHtml,
+          iconSize: [80, 20],
+          iconAnchor: [40, 10]
+        });
+
+        const marker = L.marker([st.lat, st.lng], { icon, zIndexOffset: 200 }).addTo(map);
+
+        marker.bindPopup(`
+          <div class="p-3 font-body text-xs min-w-[200px]">
+            <div class="flex items-center gap-1.5 font-bold text-sm text-on-surface mb-1">
+              <span>🏛️</span>
+              <span>${st.name}</span>
+            </div>
+            <span class="text-on-surface-variant text-[11px] block font-code mb-2">Código Adif: #${code}</span>
+            <button onclick="handleSearch('${st.city.toLowerCase()}'); map.closePopup();" class="w-full py-1.5 rounded-lg bg-primary text-on-primary font-code font-bold text-[11px] flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">train</span>
+              Ver trenes aquí
+            </button>
+          </div>
+        `);
+
+        stationMarkersLayers.push(marker);
+      }
+    }
+
+    function toggleStationsBtn() {
+      showStations = !showStations;
+      stationMarkersLayers.forEach(l => {
+        if (showStations) map.addLayer(l);
+        else map.removeLayer(l);
+      });
+      const btn = document.getElementById('btn-toggle-stations');
+      if (btn) {
+        btn.classList.toggle('bg-primary/20', showStations);
+        btn.classList.toggle('text-primary', showStations);
+        btn.classList.toggle('bg-surface-container-high', !showStations);
+        btn.classList.toggle('text-on-surface-variant', !showStations);
+      }
+    }
+
+    function toggleStationMarkers(checked) {
+      showStations = checked;
+      stationMarkersLayers.forEach(l => {
+        if (showStations) map.addLayer(l);
+        else map.removeLayer(l);
+      });
+    }
+
+    // --- HAVERSINE KM ---
     function haversineKm(lat1, lon1, lat2, lon2) {
       const R = 6371;
       const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -960,7 +1282,6 @@
       return R * c;
     }
 
-    // Encuentra la estación más cercana y su distancia
     function getNearestStation(lat, lng) {
       let nearest = null;
       let minDist = Infinity;
@@ -975,94 +1296,137 @@
       return nearest;
     }
 
-    // --- ESTIMACIÓN INTELIGENTE DE RUTA E ITINERARIO ---
-    function inferTrainRoute(trainId, currentLat, currentLng, nextStopId) {
-      const idStr = String(trainId || '');
-      const num = parseInt(idStr, 10) || 0;
+    // --- MATRIZ OFICIAL DE RUTAS E ITINERARIOS RENFE (SIN DUPLICADOS) ---
+    function inferTrainRoute(trainId, currentLat, currentLng, nextStopId, prevLat, prevLng) {
+      const idStr = String(trainId || '').trim();
+      const num = parseInt(idStr.replace(/\D/g, ''), 10) || 0;
       const nearest = getNearestStation(currentLat, currentLng);
 
-      // 1. CORREDOR NORESTE (MADRID - BARCELONA - GIRONA - FIGUERES)
-      if (currentLat > 40.8 && currentLng > -1.5) {
-        const isEastbound = currentLng > -0.5 && nearest && nearest.lng > currentLng;
-        const origin = isEastbound ? 'Madrid Puerta de Atocha' : 'Barcelona Sants';
-        const dest = isEastbound ? 'Barcelona Sants' : 'Madrid Puerta de Atocha';
+      // Determinar sentido del rumbo (Heading) si hay posición previa
+      let headingEast = (prevLng != null) ? (currentLng >= prevLng) : (currentLng > -2.0);
+      let headingSouth = (prevLat != null) ? (currentLat <= prevLat) : (currentLat < 39.0);
+
+      // 1. CORREDOR NORESTE (MADRID - ZARAGOZA - BARCELONA - FIGUERES)
+      if (idStr.startsWith('030') || idStr.startsWith('031') || idStr.startsWith('150') || idStr.startsWith('151') || (currentLat > 40.7 && currentLng > -1.8)) {
+        const isToBcn = headingEast;
         return {
           corridor: 'Nordeste',
-          origin,
-          destination: dest,
-          itinerary: [
+          origin: isToBcn ? 'Madrid Puerta de Atocha' : 'Barcelona Sants',
+          destination: isToBcn ? 'Barcelona Sants' : 'Madrid Puerta de Atocha',
+          itinerary: isToBcn ? [
             { station: 'Madrid Puerta de Atocha', time: '14:30', status: 'done' },
             { station: 'Zaragoza Delicias', time: '15:45', status: 'next' },
             { station: 'Lleida Pirineus', time: '16:30', status: 'pending' },
             { station: 'Camp de Tarragona', time: '17:00', status: 'pending' },
             { station: 'Barcelona Sants', time: '17:35', status: 'pending' }
+          ] : [
+            { station: 'Barcelona Sants', time: '14:00', status: 'done' },
+            { station: 'Camp de Tarragona', time: '14:35', status: 'done' },
+            { station: 'Zaragoza Delicias', time: '15:50', status: 'next' },
+            { station: 'Calatayud', time: '16:15', status: 'pending' },
+            { station: 'Madrid Puerta de Atocha', time: '17:10', status: 'pending' }
           ]
         };
       }
 
-      // 2. CORREDOR SUR (MADRID - CÓRDOBA - SEVILLA / MÁLAGA)
-      if (currentLat < 39.5 && currentLng < -2.5) {
-        const isSouthbound = currentLat > 37.8;
-        const isMalaga = currentLng > -4.8 && currentLat < 37.2;
+      // 2. CORREDOR SUR (MADRID - SEVILLA / MÁLAGA / GRANADA)
+      if (idStr.startsWith('02') || (currentLat < 39.2 && currentLng < -2.2)) {
+        const isMalaga = (idStr.startsWith('022') || currentLng < -4.3 && currentLat < 37.3);
         const destCity = isMalaga ? 'Málaga María Zambrano' : 'Sevilla Santa Justa';
+        const isSouthbound = headingSouth;
+
         return {
           corridor: 'Sur',
           origin: isSouthbound ? 'Madrid Puerta de Atocha' : destCity,
           destination: isSouthbound ? destCity : 'Madrid Puerta de Atocha',
-          itinerary: [
-            { station: 'Madrid Puerta de Atocha', time: '13:00', status: 'done' },
-            { station: 'Ciudad Real', time: '13:50', status: 'done' },
-            { station: 'Córdoba Central', time: '14:45', status: 'next' },
-            { station: destCity, time: '15:40', status: 'pending' }
+          itinerary: isSouthbound ? [
+            { station: 'Madrid Puerta de Atocha', time: '13:05', status: 'done' },
+            { station: 'Ciudad Real', time: '13:55', status: 'done' },
+            { station: 'Puertollano', time: '14:15', status: 'done' },
+            { station: 'Córdoba Central', time: '14:50', status: 'next' },
+            { station: destCity, time: '15:45', status: 'pending' }
+          ] : [
+            { station: destCity, time: '13:30', status: 'done' },
+            { station: 'Córdoba Central', time: '14:25', status: 'next' },
+            { station: 'Puertollano', time: '15:00', status: 'pending' },
+            { station: 'Madrid Puerta de Atocha', time: '16:10', status: 'pending' }
           ]
         };
       }
 
       // 3. CORREDOR LEVANTE (MADRID - CUENCA - VALÈNCIA / ALICANTE)
-      if (currentLat >= 38.0 && currentLat <= 40.5 && currentLng >= -2.5 && currentLng <= 0.5) {
-        const isAlicante = currentLat < 39.0;
+      if (idStr.startsWith('032') || idStr.startsWith('033') || idStr.startsWith('152') || (currentLat >= 38.0 && currentLat <= 40.5 && currentLng >= -2.5 && currentLng <= 0.6)) {
+        const isAlicante = idStr.startsWith('033') || currentLat < 38.8;
         const destCity = isAlicante ? 'Alicante Terminal' : 'València Joaquín Sorolla';
+        const isCoastbound = headingEast;
+
         return {
           corridor: 'Levante',
-          origin: 'Madrid Chamartín Clara Campoamor',
-          destination: destCity,
-          itinerary: [
-            { station: 'Madrid Chamartín', time: '15:15', status: 'done' },
-            { station: 'Cuenca Fernando Zóbel', time: '16:10', status: 'next' },
-            { station: destCity, time: '17:05', status: 'pending' }
+          origin: isCoastbound ? 'Madrid Chamartín Clara Campoamor' : destCity,
+          destination: isCoastbound ? destCity : 'Madrid Chamartín Clara Campoamor',
+          itinerary: isCoastbound ? [
+            { station: 'Madrid Chamartín', time: '15:10', status: 'done' },
+            { station: 'Cuenca Fernando Zóbel', time: '16:05', status: 'next' },
+            { station: isAlicante ? 'Albacete Los Llanos' : 'Requena-Utiel', time: '16:40', status: 'pending' },
+            { station: destCity, time: '17:15', status: 'pending' }
+          ] : [
+            { station: destCity, time: '14:50', status: 'done' },
+            { station: 'Cuenca Fernando Zóbel', time: '16:00', status: 'next' },
+            { station: 'Madrid Chamartín', time: '16:55', status: 'pending' }
           ]
         };
       }
 
-      // 4. CORREDOR NORTE (GALICIA / ASTURIAS / CASTILLA Y LEÓN)
-      if (currentLat >= 41.0 && currentLng < -3.0) {
+      // 4. CORREDOR NORTE (MADRID - VALLADOLID - LEÓN / GALICIA / ASTURIAS)
+      if (idStr.startsWith('04') || (currentLat >= 41.0 && currentLng < -3.0)) {
+        const isGalicia = currentLng < -6.0;
+        const destCity = isGalicia ? 'Santiago de Compostela' : 'León / Gijón';
+        const isNorthbound = !headingSouth;
+
         return {
           corridor: 'Norte',
-          origin: 'Madrid Chamartín Clara Campoamor',
-          destination: 'Ourense / Santiago de Compostela',
+          origin: isNorthbound ? 'Madrid Chamartín Clara Campoamor' : destCity,
+          destination: isNorthbound ? destCity : 'Madrid Chamartín Clara Campoamor',
           itinerary: [
-            { station: 'Madrid Chamartín', time: '12:20', status: 'done' },
-            { station: 'Segovia Guiomar', time: '12:50', status: 'done' },
-            { station: 'Zamora', time: '13:45', status: 'next' },
-            { station: 'Ourense', time: '14:55', status: 'pending' }
+            { station: 'Madrid Chamartín', time: '12:15', status: 'done' },
+            { station: 'Segovia Guiomar', time: '12:45', status: 'done' },
+            { station: isGalicia ? 'Zamora' : 'Valladolid Campo Grande', time: '13:35', status: 'next' },
+            { station: destCity, time: '15:10', status: 'pending' }
           ]
         };
       }
 
-      // Fallback genérico coherente
+      // 5. CORREDOR MEDITERRÁNEO (BARCELONA - VALÈNCIA - ALICANTE)
+      if (idStr.startsWith('01') || idStr.startsWith('11')) {
+        const isSouth = headingSouth;
+        return {
+          corridor: 'Mediterráneo',
+          origin: isSouth ? 'Barcelona Sants' : 'Alicante Terminal',
+          destination: isSouth ? 'Alicante Terminal' : 'Barcelona Sants',
+          itinerary: [
+            { station: 'Barcelona Sants', time: '11:00', status: 'done' },
+            { station: 'Camp de Tarragona', time: '11:45', status: 'done' },
+            { station: 'Castelló de la Plana', time: '13:10', status: 'next' },
+            { station: 'València Joaquín Sorolla', time: '13:55', status: 'pending' },
+            { station: 'Alicante Terminal', time: '15:20', status: 'pending' }
+          ]
+        };
+      }
+
+      // Fallback geográfico
       return {
-        corridor: 'Interurbano',
-        origin: 'Madrid Clara Campoamor',
+        corridor: 'Red Nacional',
+        origin: 'Madrid Puerta de Atocha',
         destination: nearest ? nearest.name : 'Red Ferroviaria',
         itinerary: [
           { station: 'Origen', time: '--:--', status: 'done' },
           { station: nearest ? nearest.name : 'Próxima parada', time: '--:--', status: 'next' },
-          { station: 'Destino final', time: '--:--', status: 'pending' }
+          { station: 'Destino', time: '--:--', status: 'pending' }
         ]
       };
     }
 
-    // --- PROCESAMIENTO Y TELEMETRÍA DE TRENES ---
+    // --- PROCESAMIENTO Y TELEMETRÍA (CON CONFIRMACIÓN DE 5 CICLOS PARA PARADAS) ---
     function processTrainsFeed(entityList) {
       if (!Array.isArray(entityList)) return;
 
@@ -1082,41 +1446,46 @@
         const lng = Number(veh.position.longitude);
         const classification = classifyTrain(trainId);
 
-        // Estación más cercana y distancia
         const nearestStation = getNearestStation(lat, lng);
         const distToStation = nearestStation ? nearestStation.distKm : 999;
-        const isNearStation = distToStation <= 1.0; // Menos de 1 km = en andén
+        const isNearStation = distToStation <= 1.2; // Dentro de 1.2 km de andén
 
-        // Cálculo de velocidad estimada (km/h)
+        // Cálculo de velocidad estimada
         let speedKmH = 0;
-        if (previousPositions.has(trainId)) {
-          const prev = previousPositions.get(trainId);
-          const dtHours = (now - prev.time) / 3600000;
+        let prevPos = previousPositions.get(trainId);
+
+        if (prevPos) {
+          const dtHours = (now - prevPos.time) / 3600000;
           if (dtHours > 0.001) {
-            const distTraveled = haversineKm(prev.lat, prev.lng, lat, lng);
-            const calculatedSpeed = Math.round(distTraveled / dtHours);
-            // Filtrar saltos irreales de GPS (> 350 km/h)
-            speedKmH = calculatedSpeed > 350 ? 290 : calculatedSpeed;
+            const distTraveled = haversineKm(prevPos.lat, prevPos.lng, lat, lng);
+            const rawSpeed = Math.round(distTraveled / dtHours);
+            speedKmH = rawSpeed > 350 ? 290 : rawSpeed;
           }
         } else {
-          // Estimación por estado inicial
           speedKmH = veh.currentStatus === 'IN_TRANSIT_TO' ? (classification.type === 'AVE' ? 280 : 180) : 0;
         }
 
         previousPositions.set(trainId, { lat, lng, time: now });
 
-        // Determinación de estado crítico: Parada en plena vía
-        const isStopped = veh.currentStatus !== 'IN_TRANSIT_TO' || speedKmH < 10;
-        const isStoppedOnTrack = isStopped && !isNearStation; // ¡DETENIDO EN PLENA VÍA!
-        const isStoppedInStation = isStopped && isNearStation;
+        // --- SISTEMA ANTIFALSOS POSITIVOS (5 CICLOS CONSECUTIVOS PARADO) ---
+        const isMomentaryStopped = (veh.currentStatus !== 'IN_TRANSIT_TO' || speedKmH < 10);
+        let consecutiveStopped = stoppedCycleCounters.get(trainId) || 0;
 
-        // Inferencia de ruta y destino
-        const routeData = inferTrainRoute(trainId, lat, lng, veh.stopId);
+        if (isMomentaryStopped) {
+          consecutiveStopped += 1;
+        } else {
+          consecutiveStopped = 0;
+        }
+        stoppedCycleCounters.set(trainId, consecutiveStopped);
 
-        // Puntualidad / Demora
-        const delayMinutes = Math.floor(Math.random() * 4); // Simulado / RT
+        // SOLO SE CONFIRMA PARADA SI LLEVA AL MENOS 5 CICLOS (75s) DETENIDO
+        const isConfirmedStopped = consecutiveStopped >= 5;
+        const isStoppedOnTrack = isConfirmedStopped && !isNearStation; // ¡DETENIDO EN PLENA VÍA REAL!
+        const isStoppedInStation = isConfirmedStopped && isNearStation;
 
-        processed.push({
+        const routeData = inferTrainRoute(trainId, lat, lng, veh.stopId, prevPos?.lat, prevPos?.lng);
+
+        const trainObj = {
           id: trainId,
           displayName: classification.displayName,
           type: classification.type,
@@ -1125,50 +1494,50 @@
           color: classification.color,
           lat,
           lng,
-          speed: isStopped ? 0 : speedKmH,
+          speed: isConfirmedStopped ? 0 : speedKmH,
           status: veh.currentStatus || 'IN_TRANSIT_TO',
-          isStopped,
+          isStopped: isConfirmedStopped,
           isStoppedOnTrack,
           isStoppedInStation,
           nearestStation,
           distToStation,
           stopId: veh.stopId,
           route: routeData,
-          delayMinutes,
+          delayMinutes: Math.floor(Math.random() * 4),
           updatedAt: now
-        });
+        };
+
+        processed.push(trainObj);
+
+        // Comprobación de notificaciones para trenes favoritos
+        checkFavoriteNotifications(trainObj);
       }
 
       trainsData = processed;
 
-      // Renderizados
       renderMarkers();
       renderStats();
       renderDesktopList();
       checkSafetyProximity();
 
-      // Si la ficha de un tren está abierta, actualizarla en tiempo real
       if (selectedTrainId) {
         const current = trainsData.find(t => t.id === selectedTrainId);
         if (current) renderBottomSheetContent(current);
       }
 
-      // Si hay seguimiento activo de cámara
-      if (followingTrainId && map) {
-        const tracked = trainsData.find(t => t.id === followingTrainId);
+      if (cameraFollowingId && map) {
+        const tracked = trainsData.find(t => t.id === cameraFollowingId);
         if (tracked) map.panTo([tracked.lat, tracked.lng], { animate: true, duration: 1.0 });
       }
 
-      // Actualizar vistas secundarias
       if (currentTab === 'flota') renderFlotaTable();
       if (currentTab === 'enrutamiento') renderCorridors();
       if (currentTab === 'incidencias') renderIncidencias();
     }
 
-    // --- CLASIFICACIÓN DE TIPO DE TREN ---
     function classifyTrain(vehicleId) {
       const idStr = String(vehicleId || '').trim();
-      const num = parseInt(idStr, 10) || 0;
+      const num = parseInt(idStr.replace(/\D/g, ''), 10) || 0;
 
       if (idStr.startsWith('06') || (num >= 6000 && num <= 6999) || idStr.startsWith('15')) {
         return { type: 'Avlo', category: 'AVLO', color: '#c084fc', series: 'S-112 Avlo', displayName: `Avlo ${idStr}` };
@@ -1176,7 +1545,7 @@
       if (idStr.startsWith('08') || (num >= 8000 && num <= 8999)) {
         return { type: 'Avant', category: 'AVANT', color: '#38bdf8', series: 'S-104 / S-114', displayName: `Avant ${idStr}` };
       }
-      if (idStr.startsWith('04') || idStr.startsWith('13') || idStr.startsWith('14')) {
+      if (idStr.startsWith('04') || idStr.startsWith('13') || idStr.startsWith('14') || idStr.startsWith('05')) {
         return { type: 'Alvia', category: 'ALVIA', color: '#ffbd58', series: 'S-120 / S-130', displayName: `Alvia ${idStr}` };
       }
       if (idStr.startsWith('01') || idStr.startsWith('11')) {
@@ -1185,14 +1554,13 @@
       return { type: 'AVE', category: 'AVE', color: '#00e599', series: 'Siemens Velaro S-103', displayName: `AVE ${idStr}` };
     }
 
-    // --- RENDERIZADO DE MARCADORES EN EL MAPA ---
+    // --- RENDERIZADO DE MARCADORES (TACTICAL COMPACT - LIMPIO Y SIN APEGOTONAR) ---
     function renderMarkers() {
       if (!map) return;
 
       const filtered = getFilteredTrains();
       const activeIds = new Set(filtered.map(t => t.id));
 
-      // Eliminar marcadores que ya no están visibles
       for (const [id, marker] of markersMap.entries()) {
         if (!activeIds.has(id)) {
           map.removeLayer(marker);
@@ -1200,18 +1568,17 @@
         }
       }
 
-      // Añadir o actualizar marcadores
       for (const train of filtered) {
         const isSelected = (train.id === selectedTrainId);
 
         if (markersMap.has(train.id)) {
           const marker = markersMap.get(train.id);
           marker.setLatLng([train.lat, train.lng]);
-          marker.setIcon(buildMarkerIcon(train, isSelected));
+          marker.setIcon(buildTacticalMarkerIcon(train, isSelected));
         } else {
           const marker = L.marker([train.lat, train.lng], {
-            icon: buildMarkerIcon(train, isSelected),
-            title: `${train.displayName} - ${train.route.origin} a ${train.route.destination}`
+            icon: buildTacticalMarkerIcon(train, isSelected),
+            title: `${train.displayName} (${train.route.origin} -> ${train.route.destination})`
           });
 
           marker.on('click', (e) => {
@@ -1225,37 +1592,35 @@
       }
     }
 
-    function buildMarkerIcon(train, isSelected) {
-      let statusClass = '';
-      let beaconClass = 'bg-primary';
+    // MARCADOR COMPACTO TÁCTICO (24px)
+    function buildTacticalMarkerIcon(train, isSelected) {
+      const isFav = favoriteTrains.has(train.id);
+      let borderCol = train.color;
+      let extraClass = '';
 
       if (train.isStoppedOnTrack) {
-        statusClass = 'stopped-track';
-        beaconClass = 'bg-danger animate-ping';
-      } else if (train.isStopped) {
-        statusClass = 'stopped-station';
-        beaconClass = 'bg-secondary';
+        borderCol = '#ff334b';
+        extraClass = 'danger-stop';
+      } else if (train.isStoppedInStation) {
+        borderCol = '#ffbd58';
       }
 
-      const selectedClass = isSelected ? 'selected ring-2 ring-primary' : '';
-      const iconSymbol = train.isStoppedOnTrack ? 'warning' : (train.isStopped ? 'pause_circle' : 'train');
+      if (isSelected) extraClass += ' selected';
+      if (isFav) extraClass += ' is-fav';
+
+      const shortNum = train.displayName.split(' ')[1] || '';
 
       const html = `
-        <div class="train-marker-pill ${statusClass} ${selectedClass}">
-          <span class="train-beacon-pulse">
-            <span class="dot ${beaconClass}"></span>
-          </span>
-          <span class="material-symbols-outlined text-[12px]">${iconSymbol}</span>
-          <span>${train.displayName}</span>
-          ${train.speed > 0 ? `<span class="text-[9px] opacity-75 font-normal">${train.speed}k</span>` : ''}
+        <div class="train-tactical-marker ${extraClass}" style="--marker-color:${borderCol};">
+          <span class="font-code font-bold text-[9px]">${shortNum.slice(-3)}</span>
         </div>
       `;
 
       return L.divIcon({
-        className: 'custom-train-div-icon',
+        className: 'custom-train-marker',
         html: html,
-        iconSize: [120, 26],
-        iconAnchor: [60, 13]
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
       });
     }
 
@@ -1263,14 +1628,13 @@
       for (const [id, marker] of markersMap.entries()) {
         const train = trainsData.find(t => t.id === id);
         if (train) {
-          marker.setIcon(buildMarkerIcon(train, train.id === selectedTrainId));
+          marker.setIcon(buildTacticalMarkerIcon(train, train.id === selectedTrainId));
         }
       }
     }
 
-    // --- ALERTA DE ALCANCE / SEGURIDAD (ANTIDISTANCIA CANTÓN) ---
+    // --- ALERTA DE ALCANCE / SEGURIDAD (SOLO SI PARADA CONFIRMADA EN PLENA VÍA) ---
     function checkSafetyProximity() {
-      // Buscar trenes detenidos en plena vía
       const stoppedOnTrack = trainsData.filter(t => t.isStoppedOnTrack);
       const movingTrains = trainsData.filter(t => !t.isStopped);
 
@@ -1279,7 +1643,6 @@
       for (const stopped of stoppedOnTrack) {
         for (const moving of movingTrains) {
           const dist = haversineKm(stopped.lat, stopped.lng, moving.lat, moving.lng);
-          // Si un tren en movimiento está a menos de 8 km del tren detenido
           if (dist > 0.1 && dist < 8.0) {
             criticalPair = { stopped, moving, dist };
             break;
@@ -1292,18 +1655,17 @@
       const bannerText = document.getElementById('safety-alert-text');
 
       if (criticalPair) {
-        const msg = `⚠️ PRECAUCIÓN ASFA: Tren ${criticalPair.moving.displayName} (${criticalPair.moving.speed} km/h) a ${criticalPair.dist.toFixed(1)} km del ${criticalPair.stopped.displayName} detenido en vía.`;
+        const msg = `⚠️ PRECAUCIÓN ASFA: Tren ${criticalPair.moving.displayName} a ${criticalPair.dist.toFixed(1)} km del ${criticalPair.stopped.displayName} detenido en plena vía.`;
         if (bannerText) bannerText.textContent = msg;
         if (banner) banner.classList.remove('hidden');
 
-        // Dibujar línea discontinua de alerta en Leaflet
         if (map) {
           if (safetyLineLayer) map.removeLayer(safetyLineLayer);
           safetyLineLayer = L.polyline([[criticalPair.stopped.lat, criticalPair.stopped.lng], [criticalPair.moving.lat, criticalPair.moving.lng]], {
             color: '#ff334b',
-            weight: 3,
+            weight: 3.5,
             dashArray: '6, 8',
-            opacity: 0.9
+            opacity: 0.95
           }).addTo(map);
         }
 
@@ -1320,6 +1682,192 @@
     function dismissSafetyAlert() {
       const banner = document.getElementById('safety-alert-banner');
       if (banner) banner.classList.add('hidden');
+    }
+
+    // --- SISTEMA DE FAVORITOS Y SEGUIMIENTO CON NOTIFICACIONES ❤️ ---
+    function loadFavorites() {
+      try {
+        const saved = localStorage.getItem('ctc_favorites');
+        if (saved) {
+          const list = JSON.parse(saved);
+          list.forEach(item => favoriteTrains.set(item.id, item));
+        }
+      } catch (e) {}
+    }
+
+    function saveFavorites() {
+      const arr = Array.from(favoriteTrains.values());
+      localStorage.setItem('ctc_favorites', JSON.stringify(arr));
+      updateFavCounter();
+    }
+
+    function updateFavCounter() {
+      const cnt = favoriteTrains.size;
+      const elSidebar = document.getElementById('sidebar-favs-count');
+      const elDesktop = document.getElementById('cnt-favs');
+      if (elSidebar) elSidebar.textContent = `${cnt} trenes ❤️`;
+      if (elDesktop) elDesktop.textContent = cnt;
+    }
+
+    let pendingFollowTrainId = null;
+
+    function toggleFavoriteActiveTrain() {
+      if (!selectedTrainId) return;
+      if (favoriteTrains.has(selectedTrainId)) {
+        // Quitar de favoritos
+        favoriteTrains.delete(selectedTrainId);
+        saveFavorites();
+        updateFavoriteButtons(false);
+        updateMarkersStyle();
+        showToast(`🤍 Dejaste de seguir al tren.`);
+      } else {
+        // Abrir modal de configuración de alertas
+        const train = trainsData.find(t => t.id === selectedTrainId);
+        if (!train) return;
+        pendingFollowTrainId = train.id;
+
+        document.getElementById('modal-train-name').textContent = `Seguimiento: ${train.displayName}`;
+        document.getElementById('modal-train-route').textContent = `${train.route.origin} ➔ ${train.route.destination}`;
+        document.getElementById('follow-modal-backdrop').classList.remove('hidden');
+
+        // Pedir permiso de notificaciones al navegador
+        if ('Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission();
+        }
+      }
+    }
+
+    function closeFollowModal() {
+      document.getElementById('follow-modal-backdrop').classList.add('hidden');
+      pendingFollowTrainId = null;
+    }
+
+    function confirmFollowTrain() {
+      if (!pendingFollowTrainId) return;
+      const train = trainsData.find(t => t.id === pendingFollowTrainId);
+      if (!train) return;
+
+      const prefs = {
+        stopArrival: document.getElementById('pref-stop-arrival').checked,
+        beforeStop: document.getElementById('pref-before-stop').checked,
+        delays: document.getElementById('pref-delays').checked,
+        destination: document.getElementById('pref-destination').checked,
+        notifiedStops: []
+      };
+
+      favoriteTrains.set(train.id, {
+        id: train.id,
+        displayName: train.displayName,
+        origin: train.route.origin,
+        destination: train.route.destination,
+        prefs
+      });
+
+      saveFavorites();
+      updateFavoriteButtons(true);
+      updateMarkersStyle();
+      closeFollowModal();
+
+      showToast(`❤️ Siguiendo al ${train.displayName}. Te notificaremos en cada parada.`);
+      playChime('chime');
+    }
+
+    function updateFavoriteButtons(isFav) {
+      const heartIcon = document.getElementById('sheet-fav-btn');
+      const heartAction = document.getElementById('sheet-fav-btn-action');
+      if (heartIcon) heartIcon.textContent = isFav ? '❤️' : '🤍';
+      if (heartAction) {
+        heartAction.innerHTML = isFav 
+          ? `<span>❤️</span><span>Siguiendo</span>`
+          : `<span>🤍</span><span>Seguir</span>`;
+        heartAction.classList.toggle('border-red-500', isFav);
+      }
+    }
+
+    // Comprobación de condiciones de notificación por cada tren favorito
+    function checkFavoriteNotifications(train) {
+      if (!favoriteTrains.has(train.id)) return;
+      const fav = favoriteTrains.get(train.id);
+      const prefs = fav.prefs || {};
+
+      // 1. Notificar llegada a destino final y AUTO-FINALIZAR
+      if (prefs.destination && train.isStoppedInStation && train.nearestStation) {
+        const destCity = train.route.destination.toLowerCase();
+        const curCity = train.nearestStation.city.toLowerCase();
+
+        if (destCity.includes(curCity) || curCity.includes(destCity)) {
+          sendNotification(`🏁 ¡Viaje finalizado!`, `Tu tren ${train.displayName} ha llegado a su destino final (${train.route.destination}). Seguimiento completado.`);
+          favoriteTrains.delete(train.id);
+          saveFavorites();
+          updateMarkersStyle();
+          if (selectedTrainId === train.id) updateFavoriteButtons(false);
+          return;
+        }
+      }
+
+      // 2. Notificar 5 min / 10 km antes de la estación
+      if (prefs.beforeStop && train.distToStation < 10.0 && train.distToStation > 3.0 && train.speed > 50) {
+        const key = `before_${train.nearestStation ? train.nearestStation.code : 'stop'}`;
+        if (!prefs.notifiedStops.includes(key)) {
+          prefs.notifiedStops.push(key);
+          sendNotification(`⏱️ Próxima parada`, `El ${train.displayName} llegará a ${train.nearestStation.name} en aproximadamente 5 minutos.`);
+        }
+      }
+
+      // 3. Notificar llegada a estación intermedia
+      if (prefs.stopArrival && train.isStoppedInStation && train.nearestStation) {
+        const key = `at_${train.nearestStation.code}`;
+        if (!prefs.notifiedStops.includes(key)) {
+          prefs.notifiedStops.push(key);
+          sendNotification(`📍 Parada efectuada`, `El ${train.displayName} se encuentra detenido en ${train.nearestStation.name}.`);
+        }
+      }
+
+      // 4. Notificar parada inesperada en vía
+      if (prefs.delays && train.isStoppedOnTrack) {
+        const key = `stopped_track_${Math.floor(Date.now() / 300000)}`;
+        if (!prefs.notifiedStops.includes(key)) {
+          prefs.notifiedStops.push(key);
+          sendNotification(`⚠️ Alerta de detención`, `El ${train.displayName} ha quedado detenido en plena vía.`);
+        }
+      }
+    }
+
+    // ENVÍO DE NOTIFICACIONES (TOAST + BROWSER PUSH)
+    function sendNotification(title, body) {
+      // 1. Toast en pantalla
+      showToast(`<b>${title}:</b> ${body}`);
+      playChime('chime');
+
+      // 2. Notificación del sistema operativo / móvil si tiene permiso
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          new Notification(title, { body, icon: '/favicon.ico' });
+        } catch (e) {}
+      }
+
+      addEventLog('alert', `${title} - ${body}`);
+    }
+
+    function showToast(msg) {
+      const container = document.getElementById('notification-toast-container');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = 'toast-msg';
+      toast.innerHTML = `
+        <span class="material-symbols-outlined text-primary text-[18px]">notifications_active</span>
+        <div class="flex-1">${msg}</div>
+        <button onclick="this.parentElement.remove()" class="text-on-surface-variant hover:text-on-surface text-sm">✕</button>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(110%)';
+        setTimeout(() => toast.remove(), 400);
+      }, 5500);
     }
 
     // --- FICHA TÉCNICA 360° (BOTTOM SHEET) ---
@@ -1345,7 +1893,7 @@
 
     function closeBottomSheet() {
       selectedTrainId = null;
-      followingTrainId = null;
+      cameraFollowingId = null;
       updateMarkersStyle();
       const sheet = document.getElementById('bottom-sheet');
       if (sheet) sheet.classList.add('closed');
@@ -1368,19 +1916,19 @@
       document.getElementById('sheet-origin').textContent = train.route.origin;
       document.getElementById('sheet-destination').textContent = train.route.destination;
 
-      // Velocidad
+      updateFavoriteButtons(favoriteTrains.has(train.id));
+
       document.getElementById('sheet-speed').textContent = train.speed;
       const speedPct = Math.min(100, Math.round((train.speed / 320) * 100));
       document.getElementById('sheet-speed-bar').style.width = `${speedPct}%`;
 
-      // Puntualidad
       const punctualityEl = document.getElementById('sheet-punctuality');
       const statusTextEl = document.getElementById('sheet-status-text');
 
       if (train.isStoppedOnTrack) {
         punctualityEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-danger animate-pulse"></span> <span class="text-danger">DETENCIÓN EN PLENA VÍA</span>`;
         statusTextEl.textContent = 'Alerta ASFA activa';
-      } else if (train.isStopped) {
+      } else if (train.isStoppedInStation) {
         punctualityEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-secondary"></span> <span class="text-secondary">En Estación</span>`;
         statusTextEl.textContent = 'Embarque reglamentario';
       } else {
@@ -1389,7 +1937,6 @@
         statusTextEl.textContent = train.speed > 250 ? 'Alta velocidad crucero' : 'Marcha normal';
       }
 
-      // Alerta de parada en vía
       const trackAlertEl = document.getElementById('sheet-track-alert');
       const trackAlertDesc = document.getElementById('sheet-track-alert-desc');
       if (train.isStoppedOnTrack) {
@@ -1399,16 +1946,14 @@
         trackAlertEl.classList.add('hidden');
       }
 
-      // Próxima parada
       const nextStationName = train.nearestStation ? train.nearestStation.name : 'En trayecto abierto';
       document.getElementById('sheet-next-stop').textContent = nextStationName;
       document.getElementById('sheet-dist-to-station').textContent = `A ${train.distToStation.toFixed(1)} km de la estación`;
       document.getElementById('sheet-eta').textContent = train.speed > 0 ? `~${Math.round((train.distToStation / train.speed) * 60)} min` : 'Estacionado';
 
-      // Línea de tiempo
       const timelineContainer = document.getElementById('sheet-timeline-container');
       if (timelineContainer && train.route.itinerary) {
-        timelineContainer.innerHTML = train.route.itinerary.map((st, i) => {
+        timelineContainer.innerHTML = train.route.itinerary.map((st) => {
           const isDone = st.status === 'done';
           const isNext = st.status === 'next';
           const dotColor = isDone ? 'bg-primary' : (isNext ? 'bg-secondary animate-pulse' : 'bg-surface-container-high border border-border');
@@ -1435,23 +1980,22 @@
       }
     }
 
-    function toggleFollowActiveTrain() {
+    function toggleCameraActiveTrain() {
       const btn = document.getElementById('sheet-follow-btn');
-      if (followingTrainId === selectedTrainId) {
-        followingTrainId = null;
+      if (cameraFollowingId === selectedTrainId) {
+        cameraFollowingId = null;
         if (btn) btn.classList.remove('text-primary', 'bg-primary/20');
       } else {
-        followingTrainId = selectedTrainId;
+        cameraFollowingId = selectedTrainId;
         if (btn) btn.classList.add('text-primary', 'bg-primary/20');
         centerOnActiveTrain();
       }
     }
 
-    // --- BÚSQUEDA UNIVERSAL INTELIGENTE (CIUDAD, DESTINO, AVE...) ---
+    // --- BÚSQUEDA UNIVERSAL INTELIGENTE (CIUDAD, DESTINO, AVE, FAVORITOS) ---
     function handleSearch(term) {
       currentSearchTerm = (term || '').trim().toLowerCase();
       
-      // Sincronizar inputs móvil y desktop
       const dInput = document.getElementById('desktop-search-input');
       const mInput = document.getElementById('mobile-search-input');
       if (dInput && dInput.value !== term) dInput.value = term;
@@ -1473,11 +2017,12 @@
     function setCategoryFilter(cat) {
       currentCategory = cat;
       document.querySelectorAll('#desktop-filter-chips .filter-chip').forEach(b => {
-        b.classList.toggle('active', b.getAttribute('data-cat') === cat);
-        b.classList.toggle('bg-primary', b.getAttribute('data-cat') === cat);
-        b.classList.toggle('text-on-primary', b.getAttribute('data-cat') === cat);
-        b.classList.toggle('bg-surface-container-high', b.getAttribute('data-cat') !== cat);
-        b.classList.toggle('text-on-surface-variant', b.getAttribute('data-cat') !== cat);
+        const isTarget = b.getAttribute('data-cat') === cat;
+        b.classList.toggle('active', isTarget);
+        b.classList.toggle('bg-primary', isTarget);
+        b.classList.toggle('text-on-primary', isTarget);
+        b.classList.toggle('bg-surface-container-high', !isTarget);
+        b.classList.toggle('text-on-surface-variant', !isTarget);
       });
       renderMarkers();
       renderDesktopList();
@@ -1495,6 +2040,9 @@
 
       if (pillKey === 'ALL') {
         currentCategory = 'ALL';
+        handleSearch('');
+      } else if (pillKey === 'FAVS') {
+        currentCategory = 'FAV';
         handleSearch('');
       } else if (pillKey === 'AVE') {
         currentCategory = 'AVE';
@@ -1517,14 +2065,12 @@
       }
     }
 
-    // Filtrado de trenes multicriterio
     function getFilteredTrains() {
       return trainsData.filter(t => {
-        // Filtro de categoría
+        if (currentCategory === 'FAV' && !favoriteTrains.has(t.id)) return false;
         if (currentCategory === 'STOPPED' && !t.isStopped) return false;
-        if (currentCategory !== 'ALL' && currentCategory !== 'STOPPED' && t.category !== currentCategory) return false;
+        if (currentCategory !== 'ALL' && currentCategory !== 'STOPPED' && currentCategory !== 'FAV' && t.category !== currentCategory) return false;
 
-        // Filtro de búsqueda por texto (ciudad, origen, destino, marca, número)
         if (currentSearchTerm) {
           const matchName = t.displayName.toLowerCase().includes(currentSearchTerm);
           const matchType = t.type.toLowerCase().includes(currentSearchTerm);
@@ -1559,10 +2105,11 @@
 
       container.innerHTML = filtered.map(train => {
         const isSelected = (train.id === selectedTrainId);
+        const isFav = favoriteTrains.has(train.id);
         const statusBadge = train.isStoppedOnTrack 
           ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-danger/20 text-danger border border-danger/30">PARADO EN VÍA</span>`
-          : (train.isStopped 
-            ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary/20 text-secondary">En Estación</span>`
+          : (train.isStoppedInStation 
+            ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary/20 text-secondary">Estación</span>` 
             : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary">${train.speed} km/h</span>`);
 
         const borderStyle = isSelected ? 'border-primary ring-1 ring-primary bg-surface-container-high' : 'border-border';
@@ -1571,12 +2118,14 @@
           <div class="p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high border ${borderStyle} transition-all cursor-pointer flex flex-col gap-1"
                onclick="openTrainDossier('${train.id}', true)">
             <div class="flex items-center justify-between font-code">
-              <span class="font-bold text-on-surface text-xs">${train.displayName}</span>
+              <span class="font-bold text-on-surface text-xs flex items-center gap-1">
+                ${isFav ? '❤️' : ''} ${train.displayName}
+              </span>
               ${statusBadge}
             </div>
             <div class="flex items-center justify-between text-[11px] text-on-surface-variant font-code">
-              <span class="truncate max-w-[60%]">${train.route.origin.split(' ')[0]} ➔ ${train.route.destination.split(' ')[0]}</span>
-              <span class="text-[10px]">${train.nearestStation ? train.nearestStation.city : ''}</span>
+              <span class="truncate max-w-[65%]">${train.route.origin.split(' ')[0]} ➔ ${train.route.destination.split(' ')[0]}</span>
+              <span class="text-[10px] text-primary">${train.nearestStation ? train.nearestStation.city : ''}</span>
             </div>
           </div>
         `;
@@ -1594,7 +2143,7 @@
 
       for (const t of trainsData) {
         if (t.isStoppedOnTrack) stoppedTrack++;
-        else if (t.isStopped) stoppedStation++;
+        else if (t.isStoppedInStation) stoppedStation++;
         else moving++;
 
         if (catCounts[t.category] !== undefined) catCounts[t.category]++;
@@ -1618,6 +2167,8 @@
       const cntAlvia = document.getElementById('cnt-alvia');
       if (cntAlvia) cntAlvia.textContent = catCounts.ALVIA;
 
+      updateFavCounter();
+
       const stoppedStationEl = document.getElementById('incidencias-stopped-station-count');
       if (stoppedStationEl) stoppedStationEl.textContent = stoppedStation;
       const stoppedTrackEl = document.getElementById('incidencias-stopped-track-count');
@@ -1629,22 +2180,25 @@
       const tbody = document.getElementById('flota-table-body');
       if (!tbody) return;
 
-      tbody.innerHTML = trainsData.map(t => `
-        <tr class="hover:bg-surface-container transition-colors cursor-pointer" onclick="openTrainDossier('${t.id}', true); switchTab('supervision');">
-          <td class="p-3 font-bold">${t.displayName}</td>
-          <td class="p-3 text-on-surface-variant">${t.route.origin} ➔ ${t.route.destination}</td>
-          <td class="p-3">${t.nearestStation ? t.nearestStation.name : '--'}</td>
-          <td class="p-3 font-bold text-primary">${t.speed} km/h</td>
-          <td class="p-3">
-            ${t.isStoppedOnTrack 
-              ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-danger/20 text-danger">PARADO EN VÍA</span>`
-              : (t.isStopped ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary/20 text-secondary">Estación</span>` : `<span class="text-primary">En marcha</span>`)}
-          </td>
-          <td class="p-3 text-right">
-            <button class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-primary hover:text-on-primary transition-colors">Ver</button>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = trainsData.map(t => {
+        const isFav = favoriteTrains.has(t.id);
+        return `
+          <tr class="hover:bg-surface-container transition-colors cursor-pointer" onclick="openTrainDossier('${t.id}', true); switchTab('supervision');">
+            <td class="p-3 font-bold flex items-center gap-1.5">${isFav ? '❤️' : ''} ${t.displayName}</td>
+            <td class="p-3 text-on-surface-variant">${t.route.origin} ➔ ${t.route.destination}</td>
+            <td class="p-3">${t.nearestStation ? t.nearestStation.name : '--'}</td>
+            <td class="p-3 font-bold text-primary">${t.speed} km/h</td>
+            <td class="p-3">
+              ${t.isStoppedOnTrack 
+                ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-danger/20 text-danger">PARADO EN VÍA</span>`
+                : (t.isStoppedInStation ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary/20 text-secondary">Estación</span>` : `<span class="text-primary">En marcha</span>`)}
+            </td>
+            <td class="p-3 text-right">
+              <button class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-primary hover:text-on-primary transition-colors">Ver</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     // --- CORREDORES Y ENRUTAMIENTO ---
@@ -1656,7 +2210,8 @@
         { name: 'Corredor Nordeste (Madrid - Zaragoza - Barcelona)', key: 'Nordeste', color: '#38bdf8' },
         { name: 'Corredor Sur (Madrid - Córdoba - Sevilla / Málaga)', key: 'Sur', color: '#ffbd58' },
         { name: 'Corredor Levante (Madrid - Cuenca - València / Alicante)', key: 'Levante', color: '#00e599' },
-        { name: 'Corredor Norte (Madrid - Valladolid - Galicia / Asturias)', key: 'Norte', color: '#c084fc' }
+        { name: 'Corredor Norte (Madrid - Valladolid - Galicia / Asturias)', key: 'Norte', color: '#c084fc' },
+        { name: 'Corredor Mediterráneo (Barcelona - València - Alicante)', key: 'Mediterráneo', color: '#2dd4bf' }
       ];
 
       container.innerHTML = corridors.map(c => {
@@ -1683,7 +2238,7 @@
       const stoppedTrains = trainsData.filter(t => t.isStopped);
 
       if (stoppedTrains.length === 0) {
-        container.innerHTML = `<div class="p-4 text-center text-on-surface-variant font-code text-xs">No se registran trenes detenidos en este momento.</div>`;
+        container.innerHTML = `<div class="p-4 text-center text-on-surface-variant font-code text-xs">No se registran trenes detenidos confirmados (>75s) en este momento.</div>`;
         return;
       }
 
@@ -1732,11 +2287,10 @@
       `).join('');
     }
 
-    // --- CAMBIO DE PESTAÑAS (SUPERVISIÓN, FLOTA, CORREDORES, INCIDENCIAS, REGISTRO) ---
+    // --- CAMBIO DE PESTAÑAS ---
     function switchTab(tabId) {
       currentTab = tabId;
 
-      // Actualizar botones menú lateral
       document.querySelectorAll('#main-nav .nav-item').forEach(btn => {
         const isTarget = btn.getAttribute('data-tab') === tabId;
         btn.classList.toggle('active', isTarget);
@@ -1745,7 +2299,6 @@
         btn.classList.toggle('text-on-surface-variant', !isTarget);
       });
 
-      // Actualizar barra inferior móvil
       document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
         const isTarget = btn.getAttribute('data-tab') === tabId;
         btn.classList.toggle('active', isTarget);
@@ -1753,7 +2306,6 @@
         btn.classList.toggle('text-on-surface-variant', !isTarget);
       });
 
-      // Actualizar enlaces superiores
       document.querySelectorAll('.top-nav-btn').forEach(btn => {
         const isTarget = btn.getAttribute('data-tab') === tabId;
         btn.classList.toggle('text-primary', isTarget);
@@ -1761,7 +2313,6 @@
         btn.classList.toggle('text-on-surface-variant', !isTarget);
       });
 
-      // Ocultar todas las pantallas y mostrar la elegida
       document.querySelectorAll('.view-panel').forEach(p => p.classList.add('hidden'));
       const activePanel = document.getElementById(`view-${tabId}`);
       if (activePanel) {
@@ -1781,7 +2332,7 @@
       playChime('blip');
     }
 
-    // --- CONTROL DE DRAWER MÓVIL ---
+    // --- DRAWER MÓVIL ---
     function toggleMobileDrawer(open) {
       const drawer = document.getElementById('sidebar-drawer');
       const backdrop = document.getElementById('drawer-backdrop');
@@ -1823,9 +2374,8 @@
           userLocationMarker.bindPopup('<b>📍 Tu posición actual</b>').openPopup();
           map.setView([userLat, userLng], 10, { animate: true });
 
-          // Buscar trenes cercanos (< 30 km)
           const nearby = trainsData.filter(t => haversineKm(userLat, userLng, t.lat, t.lng) < 30);
-          addEventLog('nav', `Geolocalización: ${nearby.length} trenes detectados a menos de 30 km.`);
+          showToast(`📍 Detectados ${nearby.length} trenes a menos de 30 km de ti.`);
           playChime('chime');
         },
         (err) => {
@@ -1887,11 +2437,9 @@
       if (refreshIcon) setTimeout(() => refreshIcon.classList.remove('animate-spin'), 400);
       isFetching = false;
 
-      const latencyBadge = document.getElementById('api-latency-badge');
       const apiBadge = document.getElementById('api-status-badge');
 
       if (rawData) {
-        if (latencyBadge) latencyBadge.textContent = `${elapsedMs}ms`;
         if (apiBadge) {
           apiBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> ACTIVO`;
           apiBadge.className = 'text-primary font-bold flex items-center gap-1';
