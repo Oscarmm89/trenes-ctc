@@ -162,6 +162,68 @@
       color: #475569 !important;
     }
 
+    
+    /* ESTILOS DE ESTACIONES Y JERARQUÍA (LOD) */
+    .station-marker-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      background: rgba(17, 19, 26, 0.90);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: #cbd5e1;
+      font-family: 'Geist', sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+      z-index: 100 !important;
+    }
+    .station-marker-badge:hover {
+      background: rgba(17, 19, 26, 0.98);
+      border-color: #00e599;
+      color: #ffffff;
+      transform: scale(1.08);
+      z-index: 500 !important;
+    }
+    .station-marker-badge.major {
+      border-color: rgba(0, 229, 153, 0.65);
+      background: rgba(12, 14, 21, 0.95);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 10.5px;
+    }
+    .station-marker-badge.dot-only {
+      width: 14px;
+      height: 14px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      border: 1.5px solid rgba(255, 255, 255, 0.45);
+      background: rgba(17, 19, 26, 0.92);
+      font-size: 8px;
+    }
+    body.light-theme .station-marker-badge {
+      background: rgba(255, 255, 255, 0.92);
+      border-color: rgba(15, 23, 42, 0.22);
+      color: #1e293b;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    body.light-theme .station-marker-badge.major {
+      border-color: #047857;
+      color: #047857;
+    }
+    .custom-train-marker {
+      z-index: 1000 !important;
+    }
+
     /* Custom Train Markers */
     .train-marker-pill {
       display: inline-flex;
@@ -1325,8 +1387,12 @@
 
       const zoom = map.getZoom();
       const bounds = map.getBounds();
-      const isZoomedIn = zoom >= 9;
 
+      // Nivel de detalle inteligente (LOD) para que NUNCA se saturen ni solapen nombres:
+      // - Zoom < 8: Solo terminales capitales principales (Atocha, Chamartín, Sants, etc.)
+      // - Zoom 8 a 10: Terminales principales con nombre; intermedias no saturan
+      // - Zoom 11: Principales con nombre; intermedias como punto discreto
+      // - Zoom >= 12: Todas las estaciones y apeaderos locales con nombre
       const toRender = [];
 
       for (let i = 0; i < ALL_SPAIN_STATIONS.length; i++) {
@@ -1335,21 +1401,26 @@
         const lng = s[3];
         const isMajor = (s[5] === 1);
 
-        // En vista general de España (zoom < 9), solo mostramos las ~35 estaciones principales
-        if (!isZoomedIn && !isMajor) continue;
-
-        // Comprobar si está dentro de la pantalla visible con un margen
-        if (lat < bounds.getSouth() - 0.2 || lat > bounds.getNorth() + 0.2 ||
-            lng < bounds.getWest() - 0.2 || lng > bounds.getEast() + 0.2) {
+        if (lat < bounds.getSouth() - 0.1 || lat > bounds.getNorth() + 0.1 ||
+            lng < bounds.getWest() - 0.1 || lng > bounds.getEast() + 0.1) {
           continue;
         }
 
-        toRender.push(s);
+        if (zoom < 8) {
+          if (isMajor) toRender.push({ s, mode: 'full' });
+        } else if (zoom >= 8 && zoom <= 10) {
+          if (isMajor) toRender.push({ s, mode: 'full' });
+        } else if (zoom === 11) {
+          if (isMajor) toRender.push({ s, mode: 'full' });
+          else toRender.push({ s, mode: 'dot' });
+        } else { // zoom >= 12 (Detalle local)
+          toRender.push({ s, mode: 'full' });
+        }
       }
 
-      const activeCodes = new Set(toRender.map(s => s[0]));
+      const activeCodes = new Set(toRender.map(item => item.s[0]));
 
-      // Eliminar marcadores que ya no son visibles
+      // Eliminar marcadores que ya no corresponden
       for (const [code, marker] of stationMarkersMap.entries()) {
         if (!activeCodes.has(code)) {
           map.removeLayer(marker);
@@ -1357,8 +1428,10 @@
         }
       }
 
-      // Añadir o mantener marcadores visibles
-      for (const s of toRender) {
+      // Añadir o actualizar marcadores visibles
+      for (const item of toRender) {
+        const s = item.s;
+        const mode = item.mode;
         const code = s[0];
         const name = s[1];
         const lat = s[2];
@@ -1366,40 +1439,50 @@
         const prov = s[4];
         const isMajor = (s[5] === 1);
 
-        if (!stationMarkersMap.has(code)) {
-          const iconHtml = `
-            <div class="station-marker-pill ${isMajor ? 'major' : 'local'}" title="${name} (${prov})">
-              <span>${isMajor ? '🏛️' : '🏠'}</span>
-              <span class="truncate max-w-[85px]">${name}</span>
-            </div>
-          `;
+        const currentMarker = stationMarkersMap.get(code);
+        if (currentMarker && currentMarker._mode === mode) {
+          continue; // Ya está bien dibujado
+        }
+        if (currentMarker) {
+          map.removeLayer(currentMarker);
+          stationMarkersMap.delete(code);
+        }
 
-          const icon = L.divIcon({
+        const isDotOnly = (mode === 'dot');
+        const iconHtml = isDotOnly
+          ? `<div class="station-marker-badge dot-only" title="${name} (${prov})"><span>🏠</span></div>`
+          : `<div class="station-marker-badge ${isMajor ? 'major' : 'local'}" title="${name} (${prov})">
+              <span>${isMajor ? '🏛️' : '🏠'}</span>
+              <span class="truncate max-w-[90px]">${name}</span>
+            </div>`;
+
+        const marker = L.marker([lat, lng], {
+          icon: L.divIcon({
             className: 'custom-station-icon',
             html: iconHtml,
-            iconSize: [100, 22],
-            iconAnchor: [50, 11]
-          });
+            iconSize: isDotOnly ? [14, 14] : [100, 22],
+            iconAnchor: isDotOnly ? [7, 7] : [50, 11]
+          }),
+          interactive: true,
+          zIndexOffset: -500
+        });
 
-          const marker = L.marker([lat, lng], { icon, zIndexOffset: isMajor ? 300 : 150 }).addTo(map);
-
-          marker.bindPopup(`
-            <div class="p-3 font-body text-xs min-w-[210px]">
-              <div class="flex items-center gap-1.5 font-bold text-sm text-on-surface mb-1">
-                <span>${isMajor ? '🏛️' : '🏠'}</span>
-                <span>${name}</span>
-              </div>
-              <span class="text-on-surface-variant text-[11px] block font-code mb-1">${prov ? prov + ' • ' : ''}Código Adif: #${code}</span>
-              <button onclick="handleSearch('${name.toLowerCase()}'); map.closePopup();" class="mt-2 w-full py-1.5 rounded-lg bg-primary text-on-primary font-code font-bold text-[11px] flex items-center justify-center gap-1 shadow-sm active:scale-98">
-                <span class="material-symbols-outlined text-[15px]">train</span>
-                Ver trenes aquí
-              </button>
+        marker._mode = mode;
+        marker.bindPopup(`
+          <div class="p-3 font-body text-xs min-w-[170px]">
+            <div class="flex items-center gap-1.5 font-bold text-sm text-on-surface mb-1">
+              <span>${isMajor ? '🏛️' : '🏠'}</span>
+              <span>${name}</span>
             </div>
-          `);
+            <div class="text-[11px] text-on-surface-variant font-code">${prov} · Código Adif ${code}</div>
+            <div class="text-[10px] text-primary mt-1 font-bold">${isMajor ? 'Estación Terminal Principal' : 'Estación / Apeadero Local'}</div>
+          </div>
+        `, { closeButton: false });
 
-          stationMarkersMap.set(code, marker);
-        }
+        marker.addTo(map);
+        stationMarkersMap.set(code, marker);
       }
+    }
     }
 
     function toggleStationsBtn() {
@@ -1757,32 +1840,39 @@
     // MARCADOR COMPACTO TÁCTICO (24px)
     function buildTacticalMarkerIcon(train, isSelected) {
       const isFav = favoriteTrains.has(train.id);
-      let borderCol = train.color;
-      let extraClass = '';
+      let dotColor = train.color;
+      let statusClass = '';
 
       if (train.isStoppedOnTrack) {
-        borderCol = '#ff334b';
-        extraClass = 'danger-stop';
-      } else if (train.isStoppedInStation) {
-        borderCol = '#ffbd58';
+        dotColor = '#ff334b';
+        statusClass = 'stopped-track';
+      } else if (train.isStationOrDepotZone || train.isStoppedInStation) {
+        dotColor = '#38bdf8';
+        statusClass = 'stopped-station';
       }
 
-      if (isSelected) extraClass += ' selected';
-      if (isFav) extraClass += ' is-fav';
-
-      const shortNum = train.displayName.split(' ')[1] || '';
+      const favIcon = isFav ? '<span class="text-[10px]">❤️</span>' : '';
+      const speedText = train.speed > 0 
+        ? `${train.speed} <span class="text-[9px] font-normal opacity-70">km/h</span>` 
+        : (train.isStoppedOnTrack ? 'VÍA' : 'ANDÉN');
 
       const html = `
-        <div class="train-tactical-marker ${extraClass}" style="--marker-color:${borderCol};">
-          <span class="font-code font-bold text-[9px]">${shortNum.slice(-3)}</span>
+        <div class="train-marker-pill ${statusClass} ${isSelected ? 'selected' : ''}" style="border-color: ${dotColor};">
+          <div class="train-beacon-pulse">
+            <span class="ping" style="background-color: ${dotColor};"></span>
+            <span class="dot" style="background-color: ${dotColor};"></span>
+          </div>
+          <span class="font-bold">${train.displayName}</span>
+          <span class="text-[10px] px-1.5 py-0.2 rounded bg-white/10 font-mono">${speedText}</span>
+          ${favIcon}
         </div>
       `;
 
       return L.divIcon({
         className: 'custom-train-marker',
         html: html,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
+        iconSize: [115, 26],
+        iconAnchor: [57, 13]
       });
     }
 
@@ -2016,7 +2106,12 @@
       if (sheet) sheet.classList.remove('closed');
 
       if (centerMap && map) {
-        map.panTo([train.lat, train.lng], { animate: true, duration: 0.8 });
+        const currentZoom = map.getZoom();
+        const targetZoom = Math.max(currentZoom, 11);
+        map.flyTo([train.lat, train.lng], targetZoom, {
+          animate: true,
+          duration: 0.9
+        });
       }
 
       playChime('blip');
@@ -2278,7 +2373,7 @@
             </div>
             <div class="flex items-center justify-between text-[11px] text-on-surface-variant font-code">
               <span class="truncate max-w-[65%]">${train.route.origin.split(' ')[0]} ➔ ${train.route.destination.split(' ')[0]}</span>
-              <span class="text-[10px] text-primary">${train.nearestStation ? train.nearestStation.city : ''}</span>
+              <span class="text-[10px] text-primary">${train.nearestStation ? (train.nearestStation.prov || train.nearestStation.name) : ''}</span>
             </div>
           </div>
         `;
