@@ -1,574 +1,1585 @@
-/* ==========================================================================
-   styles.css - SISTEMA DE DISEÑO MOBILE-FIRST B2C "VÍA LIBRE"
-   Tema Oscuro Profesional (#121212 / #1E1E1E) + Acentos de Estado Puros
-   ========================================================================== */
+/* ============================================================================
+   TRENYA PWA — SISTEMA DE DISEÑO MINIMALISTA B2C (styles.css)
+   Filosofía: "No me muestres nada hasta que yo te lo pida"
+   - Fondo Primario Dark Mode: #121212
+   - Tarjetas de Contenido (Cards): #1E1E1E
+   - Colores de Estado Puros:
+     * Verde Flúor (#00E676): En marcha y "En hora"
+     * Ámbar (#FFC107): Retrasos leves / En estación
+     * Rojo Neón (#FF3D00): Alerta "Parada en Plena Vía" (>=75s)
+   ============================================================================ */
 
-:root,
-html.dark,
-body.dark {
-  /* Paleta Base Oscura Profesional */
-  --bg-primary: #121212;
-  --bg-Outer: #09090b;
-  --bg-card: #1E1E1E;
-  --bg-card-elevated: #262626;
-  --bg-input: #181818;
-  --bg-nav: rgba(20, 20, 20, 0.94);
+:root {
+    --bg-primary: #121212;
+    --bg-card: #1E1E1E;
+    --bg-card-elevated: #262626;
+    --bg-glass: rgba(30, 30, 30, 0.90);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-highlight: rgba(255, 255, 255, 0.16);
 
-  /* Tipografía y Contrastes */
-  --text-primary: #F5F5F7;
-  --text-secondary: #A1A1AA;
-  --text-muted: #71717A;
+    --text-primary: #F5F5F7;
+    --text-secondary: #A1A1AA;
+    --text-muted: #71717A;
 
-  /* Colores de Estado Puros (Especificación B2C) */
-  --accent-green: #00E676;       /* En marcha / En hora */
-  --accent-green-dim: rgba(0, 230, 118, 0.14);
-  --accent-amber: #FFC107;       /* Retraso leve / En estación */
-  --accent-amber-dim: rgba(255, 193, 7, 0.15);
-  --accent-red: #FF3D00;         /* Alerta Parada en Plena Vía */
-  --accent-red-dim: rgba(255, 61, 0, 0.16);
-  --accent-blue: #38BDF8;        /* Cercanías / Info */
-  --accent-purple: #C084FC;      /* AVE / Alta Velocidad */
+    /* Colores de Estado Puros */
+    --status-green: #00E676;
+    --status-green-soft: rgba(0, 230, 118, 0.14);
+    --status-amber: #FFC107;
+    --status-amber-soft: rgba(255, 193, 7, 0.15);
+    --status-red: #FF3D00;
+    --status-red-soft: rgba(255, 61, 0, 0.16);
 
-  /* Bordes y Sombras */
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(0, 230, 118, 0.55);
-  --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.35);
-  --shadow-floating: 0 12px 32px rgba(0, 0, 0, 0.6);
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --nav-height: 68px;
+    --topbar-height: 58px;
+    --radius-xl: 22px;
+    --radius-lg: 18px;
+    --radius-md: 14px;
+    --radius-sm: 10px;
+    --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.38);
 }
 
-/* MODO CLARO (Alta Visibilidad Diurna) */
-html.light,
-body.light-theme {
-  --bg-primary: #F4F6F9;
-  --bg-Outer: #E2E8F0;
-  --bg-card: #FFFFFF;
-  --bg-card-elevated: #F8FAFC;
-  --bg-input: #FFFFFF;
-  --bg-nav: rgba(255, 255, 255, 0.95);
-
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #64748B;
-
-  --accent-green: #00C853;
-  --accent-green-dim: rgba(0, 200, 83, 0.12);
-  --accent-amber: #D97706;
-  --accent-amber-dim: rgba(217, 119, 6, 0.12);
-  --accent-red: #DC2626;
-  --accent-red-dim: rgba(220, 38, 38, 0.12);
-
-  --border-subtle: rgba(15, 23, 42, 0.09);
-  --border-focus: rgba(0, 200, 83, 0.5);
-  --shadow-card: 0 4px 16px rgba(15, 23, 42, 0.06);
-  --shadow-floating: 0 10px 28px rgba(15, 23, 42, 0.14);
+/* Tema Claro (Opcional desde la pestaña Perfil) */
+html.light {
+    --bg-primary: #F4F5F7;
+    --bg-card: #FFFFFF;
+    --bg-card-elevated: #F1F5F9;
+    --bg-glass: rgba(255, 255, 255, 0.92);
+    --border-subtle: rgba(0, 0, 0, 0.08);
+    --border-highlight: rgba(0, 0, 0, 0.14);
+    --text-primary: #111827;
+    --text-secondary: #4B5563;
+    --text-muted: #6B7280;
+    --shadow-card: 0 4px 16px rgba(15, 23, 42, 0.07);
 }
 
-/* Reset y Tipografía Legible (Mínimo 16px base) */
 * {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
-  background-color: var(--bg-Outer);
-  color: var(--text-primary);
-  overflow: hidden;
-  overscroll-behavior-y: none;
+html, body {
+    width: 100%;
+    height: 100%;
+    background-color: #09090B;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.45;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* ==========================================================================
-   ESTRUCTURA MOBILE-FIRST (Contenedor estilo App Telegram / Instagram en PC)
-   ========================================================================== */
+/* ============================================================================
+   1. SPLASH SCREEN (PANTALLA DE CARGA PROFESIONAL 2.5s - 3s)
+   ============================================================================ */
+.splash-screen {
+    position: fixed;
+    inset: 0;
+    background-color: #121212;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+.splash-screen.fade-out {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.splash-center-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    animation: splashHeartbeat 2s ease-in-out infinite;
+}
+
+.splash-icon-circle {
+    width: 88px;
+    height: 88px;
+    border-radius: 26px;
+    background: rgba(0, 230, 118, 0.12);
+    border: 1.5px solid rgba(0, 230, 118, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 46px;
+    box-shadow: 0 0 40px rgba(0, 230, 118, 0.25);
+}
+
+.splash-brand-title {
+    font-size: 2.3rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: #FFFFFF;
+}
+
+.splash-brand-title span {
+    color: var(--status-green);
+}
+
+.splash-tagline {
+    font-size: 0.9rem;
+    color: #A1A1AA;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+@keyframes splashHeartbeat {
+    0%, 100% {
+        transform: scale(0.97);
+        opacity: 0.88;
+    }
+    50% {
+        transform: scale(1.04);
+        opacity: 1;
+    }
+}
+
+/* ============================================================================
+   2. ESTRUCTURA MOBILE-FIRST (Contenedor Centrado en Escritorio)
+   ============================================================================ */
 .app-shell {
-  position: relative;
-  width: 100%;
-  max-width: 480px;
-  height: 100dvh;
-  margin: 0 auto;
-  background-color: var(--bg-primary);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 0 60px rgba(0, 0, 0, 0.75);
-  border-left: 1px solid var(--border-subtle);
-  border-right: 1px solid var(--border-subtle);
-  transition: max-width 0.3s ease, background-color 0.3s ease;
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    height: 100dvh;
+    margin: 0 auto;
+    background-color: var(--bg-primary);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.75);
+    border-left: 1px solid var(--border-subtle);
+    border-right: 1px solid var(--border-subtle);
+    transition: max-width 0.3s ease;
 }
 
-/* Opción para expandir el contenedor en escritorio cuando se mira el mapa */
-@media (min-width: 768px) {
-  .app-shell.map-expanded {
-    max-width: 960px;
-  }
+@media (min-width: 900px) {
+    .app-shell.map-expanded {
+        max-width: 920px;
+    }
 }
 
-/* ==========================================================================
-   VISTAS Y TRANSICIONES SUAVES (0.3s ease)
-   ========================================================================== */
-.views-viewport {
-  flex: 1;
-  position: relative;
-  width: 100%;
-  height: calc(100dvh - 70px);
-  overflow: hidden;
-}
-
-.tab-view {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-bottom: 92px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(8px);
-  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
-  pointer-events: none;
-}
-
-.tab-view.active {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  pointer-events: auto;
-  z-index: 5;
-}
-
-/* Vista Mapa sin scroll vertical para que Leaflet ocupe el 100% */
-#view-map.tab-view {
-  padding-bottom: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Scrollbar oculta pero funcional */
-.tab-view::-webkit-scrollbar,
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.tab-view,
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* ==========================================================================
-   COMPONENTES DE TARJETAS (#1E1E1E) Y BOTONES
-   ========================================================================== */
-.b2c-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 18px;
-  padding: 16px;
-  box-shadow: var(--shadow-card);
-  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.3s ease;
-}
-
-.b2c-card-interactive:active {
-  transform: scale(0.985);
-}
-
-.b2c-card-interactive:hover {
-  border-color: rgba(0, 230, 118, 0.35);
-}
-
-.b2c-input {
-  width: 100%;
-  background-color: var(--bg-input);
-  border: 1.5px solid var(--border-subtle);
-  border-radius: 16px;
-  padding: 14px 16px 14px 46px;
-  font-size: 16px; /* Evita zoom forzado en iOS y garantiza legibilidad */
-  color: var(--text-primary);
-  outline: none;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.b2c-input:focus {
-  border-color: var(--accent-green);
-  box-shadow: 0 0 0 3px var(--accent-green-dim);
-}
-
-/* Pills / Chips de Filtro Grandes */
-.filter-pill-lg {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 11px 16px;
-  border-radius: 9999px;
-  font-size: 14px;
-  font-weight: 600;
-  background-color: var(--bg-card);
-  color: var(--text-primary);
-  border: 1.5px solid var(--border-subtle);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.25s ease;
-  user-select: none;
-}
-
-.filter-pill-lg:hover {
-  border-color: rgba(0, 230, 118, 0.4);
-}
-
-.filter-pill-lg.active {
-  background-color: var(--accent-green);
-  color: #002912;
-  border-color: var(--accent-green);
-  font-weight: 700;
-  box-shadow: 0 4px 16px rgba(0, 230, 118, 0.3);
-}
-
-/* ==========================================================================
-   ANIMACIONES (@keyframes pulse) E INDICADORES EN VIVO
-   ========================================================================== */
+/* ============================================================================
+   3. ANIMACIONES (@keyframes pulse para Puntos del Mapa e Indicadores)
+   ============================================================================ */
 @keyframes pulse {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.7);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 9px rgba(0, 230, 118, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(0, 230, 118, 0);
-  }
+    0% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.75);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(0, 230, 118, 0);
+    }
+    100% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(0, 230, 118, 0);
+    }
 }
 
 @keyframes pulse-amber {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 9px rgba(255, 193, 7, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
-  }
+    0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+    70% { box-shadow: 0 0 0 9px rgba(255, 193, 7, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
 }
 
-@keyframes pulse-danger {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(255, 61, 0, 0.85);
-  }
-  50% {
-    box-shadow: 0 0 16px 4px rgba(255, 61, 0, 0.75);
-  }
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(255, 61, 0, 0.85); }
+    70% { box-shadow: 0 0 0 12px rgba(255, 61, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 61, 0, 0); }
 }
 
-.live-dot-green {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background-color: var(--accent-green);
-  display: inline-block;
-  animation: pulse 1.8s infinite;
+@keyframes spin {
+    100% { transform: rotate(360deg); }
 }
 
-.live-dot-amber {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background-color: var(--accent-amber);
-  display: inline-block;
-  animation: pulse-amber 2s infinite;
+.pulse-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.pulse-dot.green {
+    background-color: var(--status-green);
+    animation: pulse 1.8s infinite;
+}
+.pulse-dot.amber {
+    background-color: var(--status-amber);
+    animation: pulse-amber 2s infinite;
+}
+.pulse-dot.red {
+    background-color: var(--status-red);
+    animation: pulse-red 1.3s infinite;
 }
 
-.live-dot-red {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background-color: var(--accent-red);
-  display: inline-block;
-  animation: pulse-danger 1.2s infinite;
+/* ============================================================================
+   4. BARRA SUPERIOR (TOPBAR MINIMALISTA)
+   ============================================================================ */
+.app-topbar {
+    height: var(--topbar-height);
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+    z-index: 20;
 }
 
-/* Badges de Estado Puros */
-.status-badge-green {
-  background-color: var(--accent-green-dim);
-  color: var(--accent-green);
-  border: 1px solid rgba(0, 230, 118, 0.3);
+.brand-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.status-badge-amber {
-  background-color: var(--accent-amber-dim);
-  color: var(--accent-amber);
-  border: 1px solid rgba(255, 193, 7, 0.3);
+.brand-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--status-green-soft);
+    border: 1px solid rgba(0, 230, 118, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
 }
 
-.status-badge-red {
-  background-color: var(--accent-red-dim);
-  color: var(--accent-red);
-  border: 1px solid rgba(255, 61, 0, 0.4);
-  animation: pulse-danger 1.5s infinite;
+.brand-title {
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
 }
 
-/* ==========================================================================
-   BARRA DE NAVEGACIÓN INFERIOR FIJA (Bottom Navigation Bar)
-   ========================================================================== */
+.brand-title span {
+    color: var(--status-green);
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pro-chip-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 61, 0, 0.2));
+    border: 1px solid rgba(255, 193, 7, 0.45);
+    color: var(--status-amber);
+    font-weight: 800;
+    font-size: 0.75rem;
+    padding: 5px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+/* ============================================================================
+   5. CONTENEDOR DE VISTAS Y TRANSICIONES SUAVES (0.3s ease)
+   ============================================================================ */
+.views-viewport {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    background-color: var(--bg-primary);
+}
+
+.tab-view {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.tab-view.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+    z-index: 5;
+}
+
+.view-scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 22px 18px 34px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.view-scroll-content::-webkit-scrollbar {
+    width: 4px;
+}
+.view-scroll-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 4px;
+}
+
+/* ============================================================================
+   6. PESTAÑA 1: INICIO MINIMALISTA
+   Solo contiene:
+   1. Saludo y Buscador gigante "¿A dónde vas?"
+   2. Dos botones gigantes [🚈 Cercanías / Media Distancia] y [🚄 AVE / Larga Distancia]
+   3. Sección "Mis Rutas (Cercanías)"
+   ============================================================================ */
+.hero-greeting {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.greeting-eyebrow {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.greeting-headline {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+}
+
+/* Buscador Gigante: "¿A dónde vas?" */
+.hero-search-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-card);
+    border: 1.5px solid var(--border-highlight);
+    border-radius: var(--radius-xl);
+    padding: 6px 10px 6px 18px;
+    box-shadow: var(--shadow-card);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hero-search-form:focus-within {
+    border-color: var(--status-green);
+    box-shadow: 0 0 0 4px rgba(0, 230, 118, 0.16);
+}
+
+.search-icon {
+    color: var(--status-green);
+    font-size: 26px;
+    margin-right: 12px;
+}
+
+.hero-search-input {
+    flex: 1;
+    height: 52px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 1.08rem;
+    font-weight: 600;
+}
+
+.hero-search-input::placeholder {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.hero-search-go-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: var(--status-green);
+    color: #090D0A;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* Dos Botones Gigantes de Selección (Cercanías y AVE) */
+.giant-selectors-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.giant-service-btn {
+    background-color: var(--bg-card);
+    border: 1.5px solid var(--border-highlight);
+    border-radius: var(--radius-xl);
+    padding: 22px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    text-align: left;
+    color: var(--text-primary);
+    cursor: pointer;
+    box-shadow: var(--shadow-card);
+    transition: transform 0.18s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.giant-service-btn:hover {
+    border-color: var(--status-green);
+}
+
+.giant-service-btn:active {
+    transform: scale(0.97);
+}
+
+.giant-btn-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: var(--status-green-soft);
+    border: 1px solid rgba(0, 230, 118, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+.giant-btn-copy strong {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 800;
+    line-height: 1.25;
+    margin-bottom: 4px;
+}
+
+.giant-btn-copy small {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Sección Mis Rutas (Cercanías) */
+.content-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.icon-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-highlight);
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cards-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.b2c-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    box-shadow: var(--shadow-card);
+    transition: transform 0.18s ease, border-color 0.18s ease;
+    cursor: pointer;
+}
+
+.b2c-card:active {
+    transform: scale(0.99);
+}
+
+.b2c-card.status-border-green {
+    border-left: 4px solid var(--status-green);
+}
+
+.card-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.operator-badge {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 8px;
+    background: var(--bg-card-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border-highlight);
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+.status-pill.green {
+    background: var(--status-green-soft);
+    color: var(--status-green);
+}
+.status-pill.amber {
+    background: var(--status-amber-soft);
+    color: var(--status-amber);
+}
+.status-pill.red {
+    background: var(--status-red-soft);
+    color: var(--status-red);
+}
+
+.route-main-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.route-sub-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.empty-route-cta {
+    width: 100%;
+    padding: 18px;
+    background-color: var(--bg-card);
+    border: 1.5px dashed rgba(0, 230, 118, 0.45);
+    border-radius: var(--radius-lg);
+    color: var(--status-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.98rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* ============================================================================
+   7. PESTAÑA 2: MAPA EN VIVO DESATURADO (Estilo Google Maps + Puntos 12x12px)
+   ============================================================================ */
+.map-view-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.leaflet-map-canvas {
+    width: 100%;
+    height: 100%;
+    background-color: #0d1117;
+    z-index: 1;
+}
+
+.map-floating-top {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.map-search-bar {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-glass);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--border-highlight);
+    border-radius: var(--radius-md);
+    padding: 6px 10px 6px 12px;
+    box-shadow: var(--shadow-card);
+}
+
+.map-search-bar input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 1rem;
+    height: 36px;
+}
+
+.map-layer-toggle-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--bg-card-elevated);
+    border: 1px solid var(--border-highlight);
+    color: var(--status-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.map-scope-chips {
+    pointer-events: auto;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.map-scope-chips::-webkit-scrollbar {
+    display: none;
+}
+
+.scope-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-highlight);
+    color: var(--text-primary);
+    font-size: 0.84rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.scope-chip.active {
+    background: var(--status-green);
+    color: #121212;
+    border-color: var(--status-green);
+    font-weight: 800;
+}
+
+/* Aviso Minimalista cuando el usuario aún no ha elegido ningún filtro en el mapa */
+.map-empty-prompt {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 450;
+    background: var(--bg-glass);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border-highlight);
+    border-radius: var(--radius-lg);
+    padding: 18px 22px;
+    text-align: center;
+    max-width: 310px;
+    box-shadow: var(--shadow-card);
+    pointer-events: auto;
+}
+
+.map-empty-prompt strong {
+    display: block;
+    font-size: 0.98rem;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+}
+
+.map-empty-prompt p {
+    font-size: 0.83rem;
+    color: var(--text-secondary);
+}
+
+/* ============================================================================
+   REGLA DE MARCADORES LEAFLET: PUNTOS SÓLIDOS DE 12x12px CON PULSE (SIN TEXTO)
+   ============================================================================ */
+.trenya-dot-wrapper {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.trenya-dot-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.92);
+    transition: transform 0.15s ease;
+}
+
+.trenya-dot-marker:hover {
+    transform: scale(1.35);
+}
+
+.trenya-dot-marker.green {
+    background-color: var(--status-green);
+    animation: pulse 1.8s infinite;
+}
+
+.trenya-dot-marker.amber {
+    background-color: var(--status-amber);
+    animation: pulse-amber 2s infinite;
+}
+
+.trenya-dot-marker.red {
+    background-color: var(--status-red);
+    animation: pulse-red 1.25s infinite;
+}
+
+/* Popover de Capas sobre el Mapa */
+.map-layers-popover {
+    position: absolute;
+    top: 112px;
+    right: 12px;
+    width: 290px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-highlight);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    z-index: 600;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.popover-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.layer-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.layer-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.layer-info strong {
+    display: block;
+    font-size: 0.88rem;
+}
+.layer-info small {
+    display: block;
+    font-size: 0.74rem;
+    color: var(--text-secondary);
+}
+
+.map-bottom-hud {
+    position: absolute;
+    bottom: 14px;
+    left: 12px;
+    right: 12px;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.status-legend-bar {
+    pointer-events: auto;
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-highlight);
+    border-radius: 999px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.74rem;
+    overflow-x: auto;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.recenter-fab {
+    pointer-events: auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1px solid var(--border-highlight);
+    color: var(--status-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-card);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.station-dot-marker {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 1.5px solid #121212;
+    opacity: 0.75;
+}
+
+/* ============================================================================
+   8. PESTAÑA 3: BILLETES (Estilo Trainline / Omio + Afiliados)
+   ============================================================================ */
+.tickets-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.promo-tag {
+    display: inline-block;
+    align-self: flex-start;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--status-green-soft);
+    color: var(--status-green);
+}
+
+.section-subtitle {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+}
+
+.ticket-search-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-highlight);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: var(--shadow-card);
+}
+
+.station-inputs-group {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.input-field-box {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.input-field-box label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.input-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.input-field-box input,
+.input-field-box select {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    height: 28px;
+}
+
+.swap-stations-btn {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-card-elevated);
+    border: 1px solid var(--border-highlight);
+    color: var(--status-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.date-passengers-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.primary-cta-btn {
+    width: 100%;
+    height: 50px;
+    border-radius: var(--radius-md);
+    background: var(--status-green);
+    color: #090D0A;
+    border: none;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.verified-tag {
+    font-size: 0.75rem;
+    color: var(--status-green);
+    font-weight: 600;
+}
+
+.ticket-result-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: var(--shadow-card);
+}
+
+.ticket-times-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.time-block {
+    display: flex;
+    flex-direction: column;
+}
+
+.time-hour {
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.time-station {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.duration-line {
+    flex: 1;
+    margin: 0 14px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    border-bottom: 1.5px dashed var(--border-highlight);
+    padding-bottom: 4px;
+}
+
+.ticket-Price {
+    font-family: var(--font-mono);
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--status-green);
+    display: block;
+}
+
+.ticket-tariff {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+}
+
+.ticket-bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.buy-affiliate-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--status-green);
+    color: #090D0A;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 0.9rem;
+    padding: 9px 16px;
+    border-radius: 10px;
+}
+
+/* ============================================================================
+   9. PESTAÑA 4: PERFIL / AJUSTES (Auth, PRO Banner, Toggle iOS, Legal)
+   ============================================================================ */
+.profile-auth-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: var(--shadow-card);
+}
+
+.auth-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--status-green-soft);
+    color: var(--status-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-info h2 {
+    font-size: 1.12rem;
+    font-weight: 700;
+}
+.auth-info p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+}
+
+.auth-action-btn {
+    height: 44px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-card-elevated);
+    border: 1px solid var(--border-highlight);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.pro-monetization-banner {
+    background: linear-gradient(145deg, rgba(255, 193, 7, 0.14) 0%, rgba(30, 30, 30, 0.98) 65%);
+    border: 1.5px solid rgba(255, 193, 7, 0.45);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: var(--shadow-card);
+}
+
+.pro-banner-top {
+    display: flex;
+    gap: 12px;
+}
+
+.pro-icon-badge {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--status-amber);
+    color: #121212;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.pro-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.pro-title-row h3 {
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.pro-badge-pill {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(255, 193, 7, 0.2);
+    color: var(--status-amber);
+}
+
+.pro-banner-copy p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.pro-toggle-box {
+    background: rgba(18, 18, 18, 0.65);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.pro-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.pro-toggle-label strong {
+    display: block;
+    font-size: 0.9rem;
+}
+.pro-toggle-label small {
+    display: block;
+    font-size: 0.76rem;
+    color: var(--text-secondary);
+}
+
+.pro-upgrade-btn {
+    width: 100%;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(90deg, #FFC107 0%, #FF9800 100%);
+    color: #121212;
+    border: none;
+    font-family: var(--font-sans);
+    font-size: 0.96rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.settings-group-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.settings-group-header {
+    padding: 12px 16px 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+}
+
+.settings-row {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-top: 1px solid var(--border-subtle);
+    text-decoration: none;
+    color: var(--text-primary);
+}
+
+.settings-row-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.settings-icon {
+    color: var(--text-secondary);
+}
+
+.settings-row-left strong {
+    display: block;
+    font-size: 0.95rem;
+}
+.settings-row-left small {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.status-chip-active {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--status-green);
+    background: var(--status-green-soft);
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+/* Interruptor iOS */
+.ios-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+    flex-shrink: 0;
+}
+.ios-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.ios-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #3F3F46;
+    transition: 0.25s ease;
+    border-radius: 34px;
+}
+.ios-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #FFFFFF;
+    transition: 0.25s ease;
+    border-radius: 50%;
+}
+.ios-switch input:checked + .ios-slider {
+    background-color: var(--status-green);
+}
+.ios-switch input:checked + .ios-slider:before {
+    transform: translateX(22px);
+}
+
+.app-footer-meta {
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    padding: 8px 0;
+}
+
+/* ============================================================================
+   10. BOTTOM NAVIGATION BAR (4 Pestañas)
+   ============================================================================ */
 .bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
-  height: calc(68px + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  background: var(--bg-nav);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid var(--border-subtle);
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  align-items: center;
-  z-index: 40;
-  transition: max-width 0.3s ease, background-color 0.3s ease;
-}
-
-@media (min-width: 768px) {
-  .app-shell.map-expanded .bottom-nav {
-    max-width: 960px;
-  }
+    height: var(--nav-height);
+    background-color: var(--bg-card);
+    border-top: 1px solid var(--border-subtle);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    flex-shrink: 0;
+    z-index: 30;
 }
 
 .bottom-nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  height: 100%;
-  color: var(--text-muted);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: color 0.3s ease, transform 0.2s ease;
-  position: relative;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 100%;
+    cursor: pointer;
+    transition: color 0.25s ease, transform 0.2s ease;
 }
 
-.bottom-nav-item .nav-icon-pill {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 28px;
-  border-radius: 999px;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+.bottom-nav-item .nav-icon {
+    font-size: 24px;
+    transition: transform 0.25s ease;
 }
 
 .bottom-nav-item .nav-label {
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  transition: color 0.3s ease;
+    font-size: 0.75rem;
+    font-weight: 600;
 }
 
 .bottom-nav-item.active {
-  color: var(--accent-green);
+    color: var(--status-green);
 }
 
-.bottom-nav-item.active .nav-icon-pill {
-  background-color: var(--accent-green-dim);
-  transform: translateY(-1px);
+.bottom-nav-item.active .nav-icon {
+    transform: translateY(-2px);
 }
 
-/* ==========================================================================
-   ESTILOS DEL MAPA EN VIVO (LEAFLET) Y MARCADORES CON LATIDO
-   ========================================================================== */
-#leaflet-map {
-  width: 100%;
-  height: 100%;
-  background-color: #0c0e14;
-  z-index: 1;
+.nav-icon-wrapper {
+    position: relative;
+    display: inline-flex;
 }
 
-.leaflet-container {
-  background-color: #0c0e14 !important;
-  font-family: 'Inter', sans-serif;
+.nav-live-dot {
+    position: absolute;
+    top: 0;
+    right: -3px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--status-green);
 }
 
-/* Filtro oscuro táctico en Modo Oscuro, natural en Modo Claro */
-.leaflet-tile-pane {
-  filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(115%) grayscale(20%);
-  transition: filter 0.3s ease;
+/* ============================================================================
+   11. MODALES / BOTTOM SHEETS (Detalle del Tren al tocar punto en el mapa)
+   ============================================================================ */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
 }
 
-body.light-theme .leaflet-tile-pane,
-html.light .leaflet-tile-pane {
-  filter: none !important;
+.bottom-sheet-card {
+    width: 100%;
+    max-width: 480px;
+    background-color: var(--bg-card);
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    border-top: 1px solid var(--border-highlight);
+    padding: 14px 20px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-height: 88dvh;
+    overflow-y: auto;
 }
 
-body.light-theme #leaflet-map,
-body.light-theme .leaflet-container {
-  background-color: #e2e8f0 !important;
+.sheet-handle {
+    width: 42px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 0 auto 4px;
 }
 
-/* Marcadores de Tren en el Mapa */
-.custom-train-marker {
-  z-index: 900 !important;
+.modal-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.train-marker-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 9px;
-  border-radius: 9999px;
-  background: rgba(18, 18, 18, 0.94);
-  backdrop-filter: blur(8px);
-  border: 1.5px solid var(--accent-green);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.65);
-  color: #FFFFFF;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.modal-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
 }
 
-body.light-theme .train-marker-pill {
-  background: rgba(255, 255, 255, 0.96);
-  color: #0F172A;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.train-marker-pill:hover,
-.train-marker-pill.selected {
-  transform: scale(1.14);
-  box-shadow: 0 0 20px rgba(0, 230, 118, 0.75);
-  z-index: 1200 !important;
+.icon-close-sm {
+    background: var(--bg-card-elevated);
+    border: none;
+    color: var(--text-secondary);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
 }
 
-.train-marker-pill.status-amber {
-  border-color: var(--accent-amber);
+.pro-modal-badge {
+    align-self: flex-start;
+    background: rgba(255, 193, 7, 0.2);
+    color: var(--status-amber);
+    font-weight: 800;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 999px;
 }
 
-.train-marker-pill.status-red {
-  border-color: var(--accent-red) !important;
-  background: rgba(45, 10, 10, 0.96) !important;
-  color: #FFDAD6 !important;
-  animation: pulse-danger 1.4s infinite;
+.pro-perks-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 0.9rem;
 }
 
-/* Estaciones en el Mapa (LOD) */
-.station-marker-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  border-radius: 9999px;
-  background: rgba(24, 24, 28, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #E4E4E7;
-  font-size: 10px;
-  font-weight: 600;
-  white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+.pro-perks-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.station-marker-badge.major {
-  border-color: rgba(0, 230, 118, 0.6);
-  color: #FFFFFF;
+.pro-pricing-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 
-.station-marker-badge.dot-only {
-  width: 12px;
-  height: 12px;
-  padding: 0;
-  justify-content: center;
-  border-radius: 50%;
+.plan-option {
+    position: relative;
+    background: var(--bg-primary);
+    border: 1.5px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
 }
 
-/* ==========================================================================
-   INTERRUPTOR (TOGGLE SWITCH ESTILO iOS / ANDROID MODERNO)
-   ========================================================================== */
-.ios-switch {
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 28px;
-  flex-shrink: 0;
+.plan-option.selected {
+    border-color: var(--status-amber);
+    background: rgba(255, 193, 7, 0.08);
 }
 
-.ios-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+.plan-save-badge {
+    position: absolute;
+    top: -9px;
+    right: 10px;
+    background: var(--status-green);
+    color: #121212;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 999px;
 }
 
-.ios-slider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  background-color: #3F3F46;
-  transition: 0.3s ease;
-  border-radius: 34px;
+.plan-price {
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
 }
 
-.ios-slider:before {
-  position: absolute;
-  content: "";
-  height: 22px;
-  width: 22px;
-  left: 3px;
-  bottom: 3px;
-  background-color: #FFFFFF;
-  transition: 0.3s ease;
-  border-radius: 50%;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+.plan-sub {
+    font-size: 0.74rem;
+    color: var(--text-secondary);
 }
 
-.ios-switch input:checked + .ios-slider {
-  background-color: var(--accent-green);
+.secondary-ghost-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 8px;
+    cursor: pointer;
 }
 
-.ios-switch input:checked + .ios-slider:before {
-  transform: translateX(22px);
+.google-auth-btn {
+    height: 46px;
+    border-radius: var(--radius-md);
+    background: #FFFFFF;
+    color: #121212;
+    border: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
 }
 
-/* ==========================================================================
-   BOTTOM SHEET DESLIZANTE (FICHA DE TREN EN VIVO Y MODALES)
-   ========================================================================== */
-.bottom-sheet-panel {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translate(-50%, 105%);
-  width: 100%;
-  max-width: 480px;
-  max-height: 84dvh;
-  background-color: var(--bg-card);
-  border-top: 1px solid var(--border-subtle);
-  border-radius: 24px 24px 0 0;
-  box-shadow: var(--shadow-floating);
-  z-index: 60;
-  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
+.speed-mono {
+    font-family: var(--font-mono);
+    font-weight: 700;
 }
 
-.bottom-sheet-panel.open {
-  transform: translate(-50%, 0);
+.app-toast {
+    position: fixed;
+    bottom: 84px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #27272A;
+    color: #FFFFFF;
+    border: 1px solid var(--border-highlight);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    z-index: 1200;
+    box-shadow: var(--shadow-card);
 }
 
-/* Banner Gradiente Vía Libre PRO */
-.pro-gradient-banner {
-  background: linear-gradient(135deg, rgba(0, 230, 118, 0.18) 0%, rgba(56, 189, 248, 0.14) 50%, rgba(192, 132, 252, 0.18) 100%);
-  border: 1.5px solid rgba(0, 230, 118, 0.45);
+.hidden {
+    display: none !important;
 }
-
