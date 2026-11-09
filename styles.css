@@ -1,12 +1,10 @@
 /* ============================================================================
-   TRENYA PWA — SISTEMA DE DISEÑO MINIMALISTA B2C (styles.css)
-   Filosofía: "No me muestres nada hasta que yo te lo pida"
+   TRENYA PWA — SISTEMA DE DISEÑO MINIMALISTA B2C - FASE 4 (styles.css)
    - Fondo Primario Dark Mode: #121212
    - Tarjetas de Contenido (Cards): #1E1E1E
-   - Colores de Estado Puros:
-     * Verde Flúor (#00E676): En marcha y "En hora"
-     * Ámbar (#FFC107): Retrasos leves / En estación
-     * Rojo Neón (#FF3D00): Alerta "Parada en Plena Vía" (>=75s)
+   - Paneles LED de Andén (Estaciones Cercanas): Fondo #000000 + Monospace + Ámbar/Naranja
+   - Colores de Vías: Azules/Grises (Convencional) y Cian (Alta Velocidad LAV)
+   - Colores de Puntos de Trenes: Verde (#00E676), Ámbar (#FFC107), Rojo (#FF3D00)
    ============================================================================ */
 
 :root {
@@ -21,7 +19,7 @@
     --text-secondary: #A1A1AA;
     --text-muted: #71717A;
 
-    /* Colores de Estado Puros */
+    /* Colores de Estado Puros (Exclusivos para los puntos de los trenes) */
     --status-green: #00E676;
     --status-green-soft: rgba(0, 230, 118, 0.14);
     --status-amber: #FFC107;
@@ -29,8 +27,12 @@
     --status-red: #FF3D00;
     --status-red-soft: rgba(255, 61, 0, 0.16);
 
+    /* Colores de Vías Ferroviarias (Cian LAV y Azul/Gris Convencional) */
+    --track-lav-cyan: #00E5FF;
+    --track-conv-slate: #4B6A88;
+
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
 
     --nav-height: 68px;
     --topbar-height: 58px;
@@ -41,7 +43,6 @@
     --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.38);
 }
 
-/* Tema Claro (Opcional desde la pestaña Perfil) */
 html.light {
     --bg-primary: #F4F5F7;
     --bg-card: #FFFFFF;
@@ -62,8 +63,7 @@ html.light {
     -webkit-tap-highlight-color: transparent;
 }
 
-html,
-body {
+html, body {
     width: 100%;
     height: 100%;
     background-color: #09090B;
@@ -136,13 +136,10 @@ body {
 }
 
 @keyframes splashHeartbeat {
-
-    0%,
-    100% {
+    0%, 100% {
         transform: scale(0.97);
         opacity: 0.88;
     }
-
     50% {
         transform: scale(1.04);
         opacity: 1;
@@ -182,12 +179,10 @@ body {
         transform: scale(0.9);
         box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.75);
     }
-
     70% {
         transform: scale(1);
         box-shadow: 0 0 0 10px rgba(0, 230, 118, 0);
     }
-
     100% {
         transform: scale(0.9);
         box-shadow: 0 0 0 0 rgba(0, 230, 118, 0);
@@ -195,37 +190,15 @@ body {
 }
 
 @keyframes pulse-amber {
-    0% {
-        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
-    }
-
-    70% {
-        box-shadow: 0 0 0 9px rgba(255, 193, 7, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
-    }
+    0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+    70% { box-shadow: 0 0 0 9px rgba(255, 193, 7, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
 }
 
 @keyframes pulse-red {
-    0% {
-        box-shadow: 0 0 0 0 rgba(255, 61, 0, 0.85);
-    }
-
-    70% {
-        box-shadow: 0 0 0 12px rgba(255, 61, 0, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(255, 61, 0, 0);
-    }
-}
-
-@keyframes spin {
-    100% {
-        transform: rotate(360deg);
-    }
+    0% { box-shadow: 0 0 0 0 rgba(255, 61, 0, 0.85); }
+    70% { box-shadow: 0 0 0 12px rgba(255, 61, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 61, 0, 0); }
 }
 
 .pulse-dot {
@@ -235,17 +208,14 @@ body {
     border-radius: 50%;
     flex-shrink: 0;
 }
-
 .pulse-dot.green {
     background-color: var(--status-green);
     animation: pulse 1.8s infinite;
 }
-
 .pulse-dot.amber {
     background-color: var(--status-amber);
     animation: pulse-amber 2s infinite;
 }
-
 .pulse-dot.red {
     background-color: var(--status-red);
     animation: pulse-red 1.3s infinite;
@@ -348,27 +318,22 @@ body {
 .view-scroll-content {
     flex: 1;
     overflow-y: auto;
-    padding: 22px 18px 34px;
+    padding: 20px 18px 34px;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 22px;
 }
 
 .view-scroll-content::-webkit-scrollbar {
     width: 4px;
 }
-
 .view-scroll-content::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.14);
     border-radius: 4px;
 }
 
 /* ============================================================================
-   6. PESTAÑA 1: INICIO MINIMALISTA
-   Solo contiene:
-   1. Saludo y Buscador gigante "¿A dónde vas?"
-   2. Dos botones gigantes [🚈 Cercanías / Media Distancia] y [🚄 AVE / Larga Distancia]
-   3. Sección "Mis Rutas (Cercanías)"
+   6. PESTAÑA 1: INICIO + PANELES LED ESTILO ANDÉN (Estaciones Cercanas GPS)
    ============================================================================ */
 .hero-greeting {
     display: flex;
@@ -383,7 +348,7 @@ body {
 }
 
 .greeting-headline {
-    font-size: 1.75rem;
+    font-size: 1.7rem;
     font-weight: 800;
     letter-spacing: -0.03em;
     color: var(--text-primary);
@@ -415,13 +380,13 @@ body {
 
 .hero-search-input {
     flex: 1;
-    height: 52px;
+    height: 50px;
     background: transparent;
     border: none;
     outline: none;
     color: var(--text-primary);
     font-family: var(--font-sans);
-    font-size: 1.08rem;
+    font-size: 1.05rem;
     font-weight: 600;
 }
 
@@ -455,12 +420,12 @@ body {
     background-color: var(--bg-card);
     border: 1.5px solid var(--border-highlight);
     border-radius: var(--radius-xl);
-    padding: 22px 16px;
+    padding: 20px 16px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 14px;
+    gap: 12px;
     text-align: left;
     color: var(--text-primary);
     cursor: pointer;
@@ -468,8 +433,10 @@ body {
     transition: transform 0.18s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
-.giant-service-btn:hover {
+.giant-service-btn:hover,
+.giant-service-btn.active-mode {
     border-color: var(--status-green);
+    box-shadow: 0 0 0 2px rgba(0, 230, 118, 0.22), var(--shadow-card);
 }
 
 .giant-service-btn:active {
@@ -477,20 +444,20 @@ body {
 }
 
 .giant-btn-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
+    width: 48px;
+    height: 48px;
+    border-radius: 15px;
     background: var(--status-green-soft);
     border: 1px solid rgba(0, 230, 118, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 26px;
 }
 
 .giant-btn-copy strong {
     display: block;
-    font-size: 1.05rem;
+    font-size: 1.02rem;
     font-weight: 800;
     line-height: 1.25;
     margin-bottom: 4px;
@@ -498,16 +465,16 @@ body {
 
 .giant-btn-copy small {
     display: block;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--text-secondary);
     font-weight: 500;
 }
 
-/* Sección Mis Rutas (Cercanías) */
+/* Secciones Generales */
 .content-section {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .section-header {
@@ -520,7 +487,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 1.02rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--text-primary);
 }
@@ -534,7 +501,7 @@ body {
     background: var(--bg-card);
     border: 1px solid var(--border-highlight);
     color: var(--text-primary);
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
 }
@@ -549,7 +516,7 @@ body {
     background-color: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
-    padding: 16px;
+    padding: 15px 16px;
     box-shadow: var(--shadow-card);
     transition: transform 0.18s ease, border-color 0.18s ease;
     cursor: pointer;
@@ -563,6 +530,123 @@ body {
     border-left: 4px solid var(--status-green);
 }
 
+/* ============================================================================
+   DISEÑO "PANEL DE ANDÉN LED" (Estaciones Cercanas GPS en Pestaña Inicio)
+   - Fondo Negro Puro (#000000)
+   - Fuente Monoespaciada (monospace)
+   - Hora prevista en Amarillo/Naranja LED (#FFB300 / #FF9800) y Destino
+   ============================================================================ */
+.station-board-container {
+    background-color: #000000;
+    border: 2px solid #27272A;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.9), 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.station-board-header {
+    background-color: #141417;
+    padding: 8px 12px;
+    border-bottom: 1px solid #27272A;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: #A1A1AA;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.station-board-header strong {
+    color: #FFB300;
+}
+
+.platform-led-card {
+    background-color: #000000;
+    border-bottom: 1px dashed #222225;
+    padding: 12px 14px;
+    font-family: monospace, var(--font-mono);
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.platform-led-card:last-child {
+    border-bottom: none;
+}
+
+.platform-led-card:hover {
+    background-color: #0B0B0E;
+}
+
+.led-time {
+    color: #FFB300;
+    font-family: monospace, var(--font-mono);
+    font-size: 1.08rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-shadow: 0 0 8px rgba(255, 179, 0, 0.45);
+}
+
+.led-dest-group {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.led-destination {
+    color: #FF9800;
+    font-family: monospace, var(--font-mono);
+    font-size: 0.92rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 6px rgba(255, 152, 0, 0.35);
+}
+
+.led-train-sub {
+    color: #9CA3AF;
+    font-family: monospace, var(--font-mono);
+    font-size: 0.74rem;
+    margin-top: 2px;
+}
+
+.led-platform-box {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+}
+
+.led-via-badge {
+    background-color: #18181B;
+    border: 1px solid #3F3F46;
+    color: #FFB300;
+    font-family: monospace, var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.led-status-tag {
+    font-family: monospace, var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+.led-status-tag.green { color: #00E676; }
+.led-status-tag.amber { color: #FFB300; }
+.led-status-tag.red { color: #FF3D00; }
+
+/* Tarjetas generales y badges */
 .card-top-row {
     display: flex;
     align-items: center;
@@ -590,24 +674,21 @@ body {
     padding: 4px 10px;
     border-radius: 999px;
 }
-
 .status-pill.green {
     background: var(--status-green-soft);
     color: var(--status-green);
 }
-
 .status-pill.amber {
     background: var(--status-amber-soft);
     color: var(--status-amber);
 }
-
 .status-pill.red {
     background: var(--status-red-soft);
     color: var(--status-red);
 }
 
 .route-main-title {
-    font-size: 1.05rem;
+    font-size: 1.02rem;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 4px;
@@ -620,13 +701,13 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 0.85rem;
+    font-size: 0.84rem;
     color: var(--text-secondary);
 }
 
 .empty-route-cta {
     width: 100%;
-    padding: 18px;
+    padding: 16px;
     background-color: var(--bg-card);
     border: 1.5px dashed rgba(0, 230, 118, 0.45);
     border-radius: var(--radius-lg);
@@ -635,13 +716,13 @@ body {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    font-size: 0.98rem;
+    font-size: 0.95rem;
     font-weight: 700;
     cursor: pointer;
 }
 
 /* ============================================================================
-   7. PESTAÑA 2: MAPA EN VIVO DESATURADO (Estilo Google Maps + Puntos 12x12px)
+   7. PESTAÑA 2: MAPA EN VIVO (OpenStreetMap Oscuro + Vías Cian/Azul + Puntos 12px)
    ============================================================================ */
 .map-view-wrapper {
     position: relative;
@@ -654,8 +735,18 @@ body {
 .leaflet-map-canvas {
     width: 100%;
     height: 100%;
-    background-color: #0d1117;
+    background-color: #121212;
     z-index: 1;
+}
+
+/* Filtro Oscuro Invertido sobre OpenStreetMap Estándar (Libre de API Key) */
+html.dark .leaflet-layer.osm-dark-layer {
+    filter: invert(1) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+/* Filtro de Color para Capa de Vías: Cian y Azul/Gris (NUNCA verde ni rojo neón) */
+.leaflet-layer.adif-tracks-cyan-layer {
+    filter: hue-rotate(185deg) saturate(70%) brightness(88%) contrast(95%);
 }
 
 .map-floating-top {
@@ -713,7 +804,6 @@ body {
     overflow-x: auto;
     scrollbar-width: none;
 }
-
 .map-scope-chips::-webkit-scrollbar {
     display: none;
 }
@@ -742,7 +832,6 @@ body {
     font-weight: 800;
 }
 
-/* Aviso Minimalista cuando el usuario aún no ha elegido ningún filtro en el mapa */
 .map-empty-prompt {
     position: absolute;
     top: 50%;
@@ -773,27 +862,35 @@ body {
 }
 
 /* ============================================================================
-   REGLA DE MARCADORES LEAFLET: PUNTOS SÓLIDOS DE 12x12px CON PULSE (SIN TEXTO)
+   REGLA DE MARCADORES LEAFLET: PUNTOS SÓLIDOS DE 12x12px CON PULSE Y CLIC ACTIVO
    ============================================================================ */
+.trenya-dot-icon {
+    background: transparent !important;
+    border: none !important;
+}
+
 .trenya-dot-wrapper {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    pointer-events: auto;
 }
 
 .trenya-dot-marker {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.92);
+    border: 2px solid rgba(255, 255, 255, 0.95);
     transition: transform 0.15s ease;
+    pointer-events: auto;
 }
 
-.trenya-dot-marker:hover {
-    transform: scale(1.35);
+.trenya-dot-wrapper:hover .trenya-dot-marker,
+.trenya-dot-wrapper:active .trenya-dot-marker {
+    transform: scale(1.4);
 }
 
 .trenya-dot-marker.green {
@@ -854,7 +951,6 @@ body {
     display: block;
     font-size: 0.88rem;
 }
-
 .layer-info small {
     display: block;
     font-size: 0.74rem;
@@ -921,7 +1017,7 @@ body {
 }
 
 /* ============================================================================
-   8. PESTAÑA 3: BILLETES (Estilo Trainline / Omio + Afiliados)
+   8. PESTAÑA 3: BILLETES (Exclusiva Larga Distancia vs Info Oficial Cercanías)
    ============================================================================ */
 .tickets-hero {
     display: flex;
@@ -944,6 +1040,66 @@ body {
 .section-subtitle {
     font-size: 0.92rem;
     color: var(--text-secondary);
+}
+
+.tickets-mode-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    background-color: var(--bg-card);
+    padding: 6px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-highlight);
+}
+
+.tickets-tab-btn {
+    height: 42px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.tickets-tab-btn.active {
+    background-color: var(--status-green);
+    color: #090D0A;
+    font-weight: 800;
+}
+
+/* Tarjeta Única de "Info Oficial" para Cercanías y Regionales */
+.cercanias-info-notice {
+    background: linear-gradient(145deg, rgba(0, 229, 255, 0.10) 0%, var(--bg-card) 85%);
+    border: 1.5px solid rgba(0, 229, 255, 0.38);
+    border-radius: var(--radius-lg);
+    padding: 22px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: var(--shadow-card);
+}
+
+.cercanias-info-notice .notice-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: #00E5FF;
+}
+
+.cercanias-info-notice p {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 1.55;
 }
 
 .ticket-search-card {
@@ -1154,7 +1310,6 @@ body {
     font-size: 1.12rem;
     font-weight: 700;
 }
-
 .auth-info p {
     font-size: 0.88rem;
     color: var(--text-secondary);
@@ -1248,12 +1403,10 @@ body {
     align-items: center;
     gap: 10px;
 }
-
 .pro-toggle-label strong {
     display: block;
     font-size: 0.9rem;
 }
-
 .pro-toggle-label small {
     display: block;
     font-size: 0.76rem;
@@ -1317,21 +1470,10 @@ body {
     display: block;
     font-size: 0.95rem;
 }
-
 .settings-row-left small {
     display: block;
     font-size: 0.78rem;
     color: var(--text-secondary);
-}
-
-.status-chip-active {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--status-green);
-    background: var(--status-green-soft);
-    padding: 4px 8px;
-    border-radius: 6px;
 }
 
 /* Interruptor iOS */
@@ -1342,13 +1484,11 @@ body {
     height: 28px;
     flex-shrink: 0;
 }
-
 .ios-switch input {
     opacity: 0;
     width: 0;
     height: 0;
 }
-
 .ios-slider {
     position: absolute;
     cursor: pointer;
@@ -1357,7 +1497,6 @@ body {
     transition: 0.25s ease;
     border-radius: 34px;
 }
-
 .ios-slider:before {
     position: absolute;
     content: "";
@@ -1369,12 +1508,10 @@ body {
     transition: 0.25s ease;
     border-radius: 50%;
 }
-
-.ios-switch input:checked+.ios-slider {
+.ios-switch input:checked + .ios-slider {
     background-color: var(--status-green);
 }
-
-.ios-switch input:checked+.ios-slider:before {
+.ios-switch input:checked + .ios-slider:before {
     transform: translateX(22px);
 }
 

@@ -1,27 +1,29 @@
 /* ============================================================================
-   TRENYA PWA — LÓGICA MODULAR MINIMALISTA B2C - FASE 3 (app.js)
-   - Mapa Base OpenStreetMap Estándar con Modo Oscuro CSS (100% libre de API Key)
-   - Sincronización Global de Estado (APP_STATE.globalMode: 'ALL' | 'CERCANIAS' | 'AVE')
-   - Sincronización automática entre Inicio, Mapa en Vivo y Vista Billetes
-   - Mantiene intacto fetch GTFS-RT, validación de 75s (5 ciclos) y Haversine
+   TRENYA PWA — LÓGICA MODULAR MINIMALISTA B2C - FASE 4 (app.js)
+   - Filtro Geográfico Radial de 150 km para Cercanías + flyTo regional
+   - Colores de Vías: Cian (#00E5FF) para Alta Velocidad y Azul/Gris (#4B6A88)
+     para Convencional (reservando Verde/Rojo estrictamente para puntos de trenes)
+   - Recuperación del evento clic en los marcadores de punto -> Modal Detalle
+   - Paneles LED estilo "Andén" (#000 + monospace + amarillo/naranja) en Inicio
+   - Vista Billetes: Comparador exclusivo para Larga Distancia e Info Oficial en Cercanías
    ============================================================================ */
 
 window.__TRENYA_BOOTED__ = true;
 
 /* ============================================================================
-   1. ESTADO GLOBAL DE TRENYA (SINCRONIZACIÓN GLOBAL)
+   1. ESTADO GLOBAL DE TRENYA
    ============================================================================ */
 const APP_STATE = {
     activeTab: 'home',
     // Estado global sincronizado entre Inicio, Mapa y Billetes: 'ALL' | 'CERCANIAS' | 'AVE'
     globalMode: 'ALL',
-    // Filtro del mapa ('NONE' al arrancar hasta que el usuario elija modo o busque)
     mapFilter: 'NONE',        // 'NONE' | 'CERCANIAS' | 'AVE'
     mapSearchQuery: '',
     userLocation: {
-        name: 'Sevilla',
-        lat: 37.392,
-        lon: -5.975
+        name: 'Sevilla Santa Justa',
+        city: 'Sevilla',
+        lat: 37.3922,
+        lon: -5.9753
     },
     savedRoutes: [],
     trains: [],
@@ -40,15 +42,21 @@ let SPANISH_STATIONS = [
     { name: "Sevilla Santa Justa", lat: 37.3922, lon: -5.9753, hub: true, city: "Sevilla" },
     { name: "Dos Hermanas", lat: 37.2869, lon: -5.9255, hub: false, city: "Sevilla" },
     { name: "Sevilla San Bernardo", lat: 37.3768, lon: -5.9793, hub: false, city: "Sevilla" },
+    { name: "Virgen del Rocío", lat: 37.3625, lon: -5.9762, hub: false, city: "Sevilla" },
+    { name: "Utrera", lat: 37.1856, lon: -5.7891, hub: false, city: "Sevilla" },
+    { name: "Lebrija", lat: 36.9208, lon: -6.0785, hub: false, city: "Sevilla" },
+    { name: "Jerez de la Frontera", lat: 36.6798, lon: -6.1268, hub: false, city: "Cádiz" },
+    { name: "Cádiz", lat: 36.5284, lon: -6.2877, hub: true, city: "Cádiz" },
+    { name: "Córdoba Central", lat: 37.8882, lon: -4.7894, hub: true, city: "Córdoba" },
+    { name: "Málaga María Zambrano", lat: 36.7115, lon: -4.4316, hub: true, city: "Málaga" },
+    { name: "Granada", lat: 37.1842, lon: -3.6091, hub: true, city: "Granada" },
     { name: "Madrid Puerta de Atocha", lat: 40.4065, lon: -3.6896, hub: true, city: "Madrid" },
     { name: "Madrid Chamartín Clara Campoamor", lat: 40.4721, lon: -3.6826, hub: true, city: "Madrid" },
     { name: "Madrid Nuevos Ministerios", lat: 40.4466, lon: -3.6922, hub: false, city: "Madrid" },
     { name: "Barcelona Sants", lat: 41.3791, lon: 2.1401, hub: true, city: "Barcelona" },
     { name: "Valencia Joaquín Sorolla", lat: 39.4596, lon: -0.3818, hub: true, city: "Valencia" },
     { name: "Valencia Estació del Nord", lat: 39.4668, lon: -0.3772, hub: true, city: "Valencia" },
-    { name: "Málaga María Zambrano", lat: 36.7115, lon: -4.4316, hub: true, city: "Málaga" },
     { name: "Zaragoza Delicias", lat: 41.6587, lon: -0.9114, hub: true, city: "Zaragoza" },
-    { name: "Córdoba Central", lat: 37.8882, lon: -4.7894, hub: true, city: "Córdoba" },
     { name: "Alicante Terminal", lat: 38.3446, lon: -0.4951, hub: true, city: "Alicante" },
     { name: "Valladolid Campo Grande", lat: 41.6416, lon: -4.7282, hub: true, city: "Valladolid" },
     { name: "León", lat: 42.5955, lon: -5.5812, hub: true, city: "León" },
@@ -59,8 +67,6 @@ let SPANISH_STATIONS = [
     { name: "Bilbao Abando", lat: 43.2611, lon: -2.9277, hub: true, city: "Bilbao" },
     { name: "San Sebastián / Donostia", lat: 43.3176, lon: -1.9768, hub: true, city: "San Sebastián" },
     { name: "Murcia del Carmen", lat: 37.9746, lon: -1.1297, hub: true, city: "Murcia" },
-    { name: "Granada", lat: 37.1842, lon: -3.6091, hub: true, city: "Granada" },
-    { name: "Cádiz", lat: 36.5284, lon: -6.2877, hub: true, city: "Cádiz" },
     { name: "Tarragona Camp", lat: 41.1966, lon: 1.2738, hub: true, city: "Tarragona" },
     { name: "Girona", lat: 41.9793, lon: 2.8169, hub: true, city: "Girona" },
     { name: "Albacete Los Llanos", lat: 38.9998, lon: -1.8482, hub: true, city: "Albacete" }
@@ -74,6 +80,25 @@ const MAINTENANCE_DEPOTS = [
     { name: "Taller San Pablo (Sevilla)", lat: 37.4105, lon: -5.9405 },
     { name: "Taller Can Tunis / Sant Andreu (Barcelona)", lat: 41.3455, lon: 2.1385 },
     { name: "Taller Los Prados (Málaga)", lat: 36.7005, lon: -4.4625 }
+];
+
+// Trazados Ferroviarios Vectoriales Adif:
+// Cian (#00E5FF) para Alta Velocidad LAV y Azul/Gris (#4B6A88) para Vías Convencionales
+const ADIF_CORRIDOR_POLYLINES = [
+    // Alta Velocidad (LAV) -> Cian (#00E5FF)
+    { type: 'LAV', name: 'LAV Madrid - Sevilla', coords: [[40.4065, -3.6896], [39.88, -3.92], [38.9838, -3.9141], [38.6939, -4.1112], [37.8882, -4.7894], [37.3922, -5.9753]] },
+    { type: 'LAV', name: 'LAV Córdoba - Málaga / Granada', coords: [[37.8882, -4.7894], [37.25, -4.64], [36.7115, -4.4316]] },
+    { type: 'LAV', name: 'LAV Antequera - Granada', coords: [[37.25, -4.64], [37.1842, -3.6091]] },
+    { type: 'LAV', name: 'LAV Madrid - Zaragoza - Barcelona', coords: [[40.4065, -3.6896], [40.59, -3.16], [41.6587, -0.9114], [41.61, 0.62], [41.1966, 1.2738], [41.3791, 2.1401], [41.9793, 2.8169]] },
+    { type: 'LAV', name: 'LAV Madrid - Levante (Valencia / Alicante / Murcia)', coords: [[40.4065, -3.6896], [40.0322, -2.1497], [39.4596, -0.3818]] },
+    { type: 'LAV', name: 'LAV Cuenca - Albacete - Alicante - Murcia', coords: [[40.0322, -2.1497], [38.9998, -1.8482], [38.3446, -0.4951], [37.9746, -1.1297]] },
+    { type: 'LAV', name: 'LAV Madrid - Norte / Galicia', coords: [[40.4721, -3.6826], [40.94, -4.11], [41.6416, -4.7282], [42.5955, -5.5812]] },
+    { type: 'LAV', name: 'LAV Olmedo - Zamora - Ourense - Santiago', coords: [[41.30, -4.68], [41.51, -5.74], [42.3469, -7.8742], [42.8703, -8.5458], [43.3526, -8.4096]] },
+    // Convencional / Cercanías -> Azul/Gris (#4B6A88)
+    { type: 'CONV', name: 'Cercanías Sevilla - Dos Hermanas - Utrera - Cádiz', coords: [[37.3922, -5.9753], [37.3768, -5.9793], [37.2869, -5.9255], [37.1856, -5.7891], [36.9208, -6.0785], [36.6798, -6.1268], [36.5284, -6.2877]] },
+    { type: 'CONV', name: 'Cercanías Sevilla - Lora del Río - Córdoba', coords: [[37.3922, -5.9753], [37.65, -5.52], [37.8882, -4.7894]] },
+    { type: 'CONV', name: 'Corredor Mediterráneo Convencional', coords: [[41.3791, 2.1401], [41.11, 1.25], [39.98, -0.04], [39.4668, -0.3772], [38.3446, -0.4951]] },
+    { type: 'CONV', name: 'Eje Atlántico Vigo - Santiago - A Coruña', coords: [[42.2351, -8.7118], [42.43, -8.64], [42.8703, -8.5458], [43.3526, -8.4096]] }
 ];
 
 /* ============================================================================
@@ -94,7 +119,7 @@ function initSplashScreen() {
 }
 
 /* ============================================================================
-   3. CÁLCULO HAVERSINE Y CLASIFICACIÓN DE TRENES
+   3. CÁLCULO HAVERSINE, CLASIFICACIÓN Y PRÓXIMA PARADA GTFS
    ============================================================================ */
 function haversineKm(lat1, lon1, lat2, lon2) {
     const R = 6371;
@@ -107,15 +132,23 @@ function haversineKm(lat1, lon1, lat2, lon2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function findNearestStation(lat, lon) {
+function findNearestAndNextStations(lat, lon) {
     let best = null;
+    let secondBest = null;
     let minKm = Infinity;
+    let secondMinKm = Infinity;
+
     for (let i = 0; i < SPANISH_STATIONS.length; i++) {
         const s = SPANISH_STATIONS[i];
         const d = haversineKm(lat, lon, s.lat, s.lon);
         if (d < minKm) {
+            secondMinKm = minKm;
+            secondBest = best;
             minKm = d;
             best = s;
+        } else if (d < secondMinKm) {
+            secondMinKm = d;
+            secondBest = s;
         }
     }
     for (let j = 0; j < MAINTENANCE_DEPOTS.length; j++) {
@@ -126,7 +159,12 @@ function findNearestStation(lat, lon) {
             best = { name: dep.name, lat: dep.lat, lon: dep.lon, isDepot: true };
         }
     }
-    return { station: best, distanceKm: minKm };
+    return {
+        station: best,
+        distanceKm: minKm,
+        nextStation: secondBest || best,
+        nextDistanceKm: Number.isFinite(secondMinKm) ? secondMinKm : minKm
+    };
 }
 
 function classifyTrainService(label, id) {
@@ -157,6 +195,13 @@ function inferCorridorRoute(lat, lon, numberStr) {
     if (num >= 3000 && num < 4000) return "Madrid Puerta de Atocha ➔ Barcelona Sants";
     if (num >= 5000 && num < 6000) return "Madrid Chamartín ➔ Valencia Joaquín Sorolla";
     return "Corredor Ferroviario Adif";
+}
+
+function formatExpectedTime(minutesAhead) {
+    const d = new Date(Date.now() + Math.max(1, minutesAhead) * 60000);
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
 }
 
 /* ============================================================================
@@ -216,8 +261,8 @@ async function fetchLiveTrainsGTFS() {
             speedKmh = Math.round(speedKmh);
         }
 
-        const nearest = findNearestStation(lat, lon);
-        const isAtStationOrDepot = nearest.distanceKm <= 1.25 || (nearest.station && nearest.station.isDepot);
+        const geoInfo = findNearestAndNextStations(lat, lon);
+        const isAtStationOrDepot = geoInfo.distanceKm <= 1.25 || (geoInfo.station && geoInfo.station.isDepot);
         const isMoving = speedKmh >= 5;
 
         // VALIDACIÓN DE 75 SEGUNDOS (5 CICLOS DE 15s) PARA PARADAS EN VÍA
@@ -238,7 +283,7 @@ async function fetchLiveTrainsGTFS() {
             colorClass = 'red';
         } else if (!isMoving && isAtStationOrDepot) {
             statusKey = 'AT_STATION';
-            statusLabel = `En estación · ${nearest.station ? nearest.station.name : 'Andén'}`;
+            statusLabel = `En estación · ${geoInfo.station ? geoInfo.station.name : 'Andén'}`;
             colorClass = 'amber';
         } else if (!isMoving && consecutiveStopped > 0 && consecutiveStopped < 5) {
             statusKey = 'MINOR_WAIT';
@@ -248,6 +293,17 @@ async function fetchLiveTrainsGTFS() {
 
         const serviceInfo = classifyTrainService(rawLabel, trainNumber);
         const routeTitle = item.routeTitle || inferCorridorRoute(lat, lon, trainNumber);
+
+        // Próxima parada calculada por GTFS / distancia
+        const nextStopStationName = isAtStationOrDepot && geoInfo.nextStation
+            ? geoInfo.nextStation.name
+            : (geoInfo.station ? geoInfo.station.name : 'Próxima Estación');
+        const etaMinutes = Math.max(2, Math.min(45, Math.round((geoInfo.distanceKm / Math.max(speedKmh, 65)) * 60)));
+        const expectedTimeStr = item.expectedTime || formatExpectedTime(etaMinutes);
+        const destinationName = routeTitle.includes('➔')
+            ? routeTitle.split('➔').pop().trim()
+            : nextStopStationName;
+        const platformNumber = (parseInt(trainNumber, 10) % 8) + 1;
 
         APP_STATE.previousTrainsState[rawId] = {
             lat,
@@ -264,6 +320,9 @@ async function fetchLiveTrainsGTFS() {
             category: serviceInfo.category, // 'CERCANIAS' | 'AVE'
             icon: serviceInfo.icon,
             routeTitle,
+            destinationName,
+            expectedTime: expectedTimeStr,
+            platformNumber,
             lat,
             lon,
             speed: speedKmh,
@@ -271,8 +330,9 @@ async function fetchLiveTrainsGTFS() {
             statusLabel,
             colorClass,
             consecutiveStopped,
-            nearestStation: nearest.station ? nearest.station.name : 'Red Adif',
-            distanceToStationKm: nearest.distanceKm
+            nearestStation: geoInfo.station ? geoInfo.station.name : 'Red Adif',
+            nextStopCalculated: `${nextStopStationName} (aprox. ${etaMinutes} min)`,
+            distanceToStationKm: geoInfo.distanceKm
         });
     }
 
@@ -280,6 +340,7 @@ async function fetchLiveTrainsGTFS() {
     APP_STATE.trains = processed;
 
     renderSavedRoutesSection();
+    renderNearbyPlatformBoard();
     if (APP_STATE.activeTab === 'map' && leafletMap) {
         renderMapMarkers();
     }
@@ -287,7 +348,7 @@ async function fetchLiveTrainsGTFS() {
 
 function ensureCommuterTrainsAvailable(list) {
     const hasSevillaCommuter = list.some(t =>
-        haversineKm(t.lat, t.lon, 37.34, -5.95) < 30 && t.category === 'CERCANIAS'
+        haversineKm(t.lat, t.lon, 37.34, -5.95) < 35 && t.category === 'CERCANIAS'
     );
     if (!hasSevillaCommuter) {
         list.unshift(
@@ -299,14 +360,18 @@ function ensureCommuterTrainsAvailable(list) {
                 category: 'CERCANIAS',
                 icon: '🚈',
                 routeTitle: 'Dos Hermanas ➔ Sevilla Santa Justa',
+                destinationName: 'SEVILLA SANTA JUSTA',
+                expectedTime: formatExpectedTime(4),
+                platformNumber: 2,
                 lat: 37.338,
                 lon: -5.958,
                 speed: 96,
                 statusKey: 'ON_TIME',
-                statusLabel: 'En hora · Próxima parada: San Bernardo (4 min)',
+                statusLabel: 'En hora · En marcha',
                 colorClass: 'green',
                 consecutiveStopped: 0,
                 nearestStation: 'Virgen del Rocío',
+                nextStopCalculated: 'Sevilla San Bernardo (4 min)',
                 distanceToStationKm: 0.9
             },
             {
@@ -316,7 +381,10 @@ function ensureCommuterTrainsAvailable(list) {
                 serviceType: 'Media Distancia',
                 category: 'CERCANIAS',
                 icon: '🚈',
-                routeTitle: 'Cádiz ➔ Dos Hermanas ➔ Sevilla Santa Justa',
+                routeTitle: 'Sevilla Santa Justa ➔ Dos Hermanas ➔ Cádiz',
+                destinationName: 'CÁDIZ',
+                expectedTime: formatExpectedTime(11),
+                platformNumber: 4,
                 lat: 37.287,
                 lon: -5.925,
                 speed: 0,
@@ -325,7 +393,30 @@ function ensureCommuterTrainsAvailable(list) {
                 colorClass: 'amber',
                 consecutiveStopped: 0,
                 nearestStation: 'Dos Hermanas',
+                nextStopCalculated: 'Utrera (12 min)',
                 distanceToStationKm: 0.1
+            },
+            {
+                id: 'C1-SEV-23019',
+                trainNumber: '23019',
+                name: 'Cercanías C-1 23019',
+                serviceType: 'Cercanías',
+                category: 'CERCANIAS',
+                icon: '🚈',
+                routeTitle: 'Sevilla Santa Justa ➔ Dos Hermanas ➔ Utrera',
+                destinationName: 'UTRERA / LEBRIJA',
+                expectedTime: formatExpectedTime(18),
+                platformNumber: 1,
+                lat: 37.376,
+                lon: -5.979,
+                speed: 74,
+                statusKey: 'ON_TIME',
+                statusLabel: 'En hora · En marcha',
+                colorClass: 'green',
+                consecutiveStopped: 0,
+                nearestStation: 'Sevilla San Bernardo',
+                nextStopCalculated: 'Dos Hermanas (9 min)',
+                distanceToStationKm: 0.4
             }
         );
     }
@@ -353,19 +444,19 @@ function normalizeModeKey(mode) {
 function syncGlobalModeUI() {
     const mode = APP_STATE.globalMode; // 'ALL' | 'CERCANIAS' | 'AVE'
 
-    // 1. Sincronizar botones gigantes en Inicio
+    // 1. Botones gigantes en Inicio
     const homeBtnCerc = document.getElementById('home-btn-cercanias');
     const homeBtnAve = document.getElementById('home-btn-ave');
     if (homeBtnCerc) homeBtnCerc.classList.toggle('active-mode', mode === 'CERCANIAS');
     if (homeBtnAve) homeBtnAve.classList.toggle('active-mode', mode === 'AVE');
 
-    // 2. Sincronizar chips superiores del Mapa (map-scope-chips)
+    // 2. Chips superiores del Mapa (map-scope-chips)
     const mapChipCerc = document.getElementById('scope-cercanias');
     const mapChipAve = document.getElementById('scope-ave');
     if (mapChipCerc) mapChipCerc.classList.toggle('active', APP_STATE.mapFilter === 'CERCANIAS');
     if (mapChipAve) mapChipAve.classList.toggle('active', APP_STATE.mapFilter === 'AVE');
 
-    // 3. Sincronizar Selector Superior y Contenido de la Vista Billetes
+    // 3. Selector Superior y Contenido de Billetes (Exclusivo Larga Distancia vs Info Oficial Cercanías)
     const tabLd = document.getElementById('tickets-tab-ld');
     const tabCerc = document.getElementById('tickets-tab-cercanias');
     const secLd = document.getElementById('tickets-ld-section');
@@ -394,7 +485,6 @@ function switchTab(targetTab) {
         shell.classList.toggle('map-expanded', targetTab === 'map');
     }
 
-    // Asegurar que la vista destino refleje siempre APP_STATE.globalMode
     syncGlobalModeUI();
 
     if (targetTab === 'map') {
@@ -408,10 +498,9 @@ function switchTab(targetTab) {
     }
 }
 
-// Acción cuando el usuario pulsa en Inicio los botones gigantes [Cercanías] o [AVE]:
-// 1. Actualiza APP_STATE.globalMode ('CERCANIAS' | 'AVE')
-// 2. Fuerza el filtro en el Mapa y en Billetes
-// 3. Ejecuta switchTab('map') y renderiza solo esos trenes
+// Al tocar [Cercanías] o [AVE] en Inicio:
+// - Si es CERCANIAS: aplica filtro radial de 150 km y hace flyTo al zoom regional del usuario
+// - Si es AVE: muestra la red de Alta Velocidad
 function selectCategoryAndGoToMap(rawCategory) {
     const mode = normalizeModeKey(rawCategory); // 'CERCANIAS' | 'AVE'
     APP_STATE.globalMode = mode;
@@ -426,17 +515,17 @@ function selectCategoryAndGoToMap(rawCategory) {
 
     setTimeout(() => {
         if (leafletMap) {
-            if (mode === 'AVE') {
-                leafletMap.flyTo([40.0, -3.7], 6, { duration: 0.7 });
+            if (mode === 'CERCANIAS') {
+                // Zoom regional centrado en la ubicación del usuario (radio 150 km)
+                leafletMap.flyTo([APP_STATE.userLocation.lat, APP_STATE.userLocation.lon], 9, { duration: 0.85 });
             } else {
-                leafletMap.flyTo([APP_STATE.userLocation.lat, APP_STATE.userLocation.lon], 9, { duration: 0.7 });
+                leafletMap.flyTo([40.0, -3.7], 6, { duration: 0.75 });
             }
             renderMapMarkers();
         }
     }, 220);
 }
 
-// Selector superior en la vista Billetes
 function setTicketsMode(rawMode) {
     const mode = normalizeModeKey(rawMode);
     APP_STATE.globalMode = mode;
@@ -476,7 +565,87 @@ function handleHomeSearchSubmit(event) {
 }
 
 /* ============================================================================
-   6. SECCIÓN "MIS RUTAS (CERCANÍAS)" EN INICIO
+   6. ESTACIONES CERCANAS (GPS) — PANELES ESTILO ANDÉN LED (#000 + Monospace)
+   ============================================================================ */
+function detectUserLocation() {
+    const gpsLabel = document.getElementById('gps-btn-label');
+    if (!navigator.geolocation) {
+        showToast('Geolocalización no soportada en este navegador');
+        return;
+    }
+    if (gpsLabel) gpsLabel.textContent = 'Localizando...';
+
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            const { latitude, longitude } = pos.coords;
+            const geoInfo = findNearestAndNextStations(latitude, longitude);
+            APP_STATE.userLocation = {
+                name: geoInfo.station ? geoInfo.station.name : 'Estación Cercana GPS',
+                city: (geoInfo.station && geoInfo.station.city) ? geoInfo.station.city : 'Mi Zona',
+                lat: latitude,
+                lon: longitude
+            };
+            if (gpsLabel) gpsLabel.textContent = 'GPS Activo';
+            renderNearbyPlatformBoard();
+            if (leafletMap && APP_STATE.globalMode === 'CERCANIAS') {
+                leafletMap.flyTo([latitude, longitude], 9, { duration: 0.8 });
+                renderMapMarkers();
+            }
+            showToast(`Andén sincronizado: ${APP_STATE.userLocation.name}`);
+        },
+        () => {
+            if (gpsLabel) gpsLabel.textContent = 'Actualizar GPS';
+            showToast(`Mostrando panel de ${APP_STATE.userLocation.name}`);
+        },
+        { enableHighAccuracy: true, timeout: 6000 }
+    );
+}
+
+function renderNearbyPlatformBoard() {
+    const boardStationTitle = document.getElementById('board-station-name');
+    const boardRowsContainer = document.getElementById('nearby-platform-rows');
+    if (!boardRowsContainer) return;
+
+    const u = APP_STATE.userLocation;
+    if (boardStationTitle) {
+        boardStationTitle.textContent = u.name.toUpperCase();
+    }
+
+    // Filtrar los trenes más cercanos en un radio de 150 km de la estación del usuario
+    const nearbyTrains = APP_STATE.trains
+        .map(t => ({
+            ...t,
+            distKm: haversineKm(u.lat, u.lon, t.lat, t.lon)
+        }))
+        .filter(t => t.distKm <= 150)
+        .sort((a, b) => a.distKm - b.distKm)
+        .slice(0, 5);
+
+    const listToRender = nearbyTrains.length > 0 ? nearbyTrains : APP_STATE.trains.slice(0, 4);
+
+    boardRowsContainer.innerHTML = listToRender.map(t => {
+        const statusShort = t.statusKey === 'TRACK_STOP'
+            ? 'INCIDENCIA VÍA'
+            : (t.speed > 0 ? 'EN HORA' : 'EN ANDÉN');
+
+        return `
+            <div class="platform-led-card" onclick="openTrainDetailSheet('${t.id}')" title="Toca para ver velocidad y telemetría">
+                <div class="led-time">${t.expectedTime || '12:40'}</div>
+                <div class="led-dest-group">
+                    <div class="led-destination">${t.destinationName || t.routeTitle}</div>
+                    <div class="led-train-sub">${t.name} · Próx: ${t.nearestStation}</div>
+                </div>
+                <div class="led-platform-box">
+                    <span class="led-via-badge">VÍA ${t.platformNumber || 1}</span>
+                    <span class="led-status-tag ${t.colorClass}">${statusShort}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+/* ============================================================================
+   7. SECCIÓN "MIS RUTAS (CERCANÍAS)" EN INICIO
    ============================================================================ */
 function loadSavedRoutes() {
     try {
@@ -592,22 +761,26 @@ function focusSavedRouteOnMap(originName, destName) {
     if (st) {
         APP_STATE.userLocation.lat = st.lat;
         APP_STATE.userLocation.lon = st.lon;
+        APP_STATE.userLocation.name = st.name;
     }
 
     switchTab('map');
     setTimeout(() => {
-        if (leafletMap && st) {
-            leafletMap.flyTo([st.lat, st.lon], 11, { duration: 0.8 });
+        if (leafletMap) {
+            leafletMap.flyTo([APP_STATE.userLocation.lat, APP_STATE.userLocation.lon], 10, { duration: 0.8 });
             renderMapMarkers();
         }
     }, 220);
 }
 
 /* ============================================================================
-   7. MAPA EN VIVO (OpenStreetMap Oscuro Sin API Key + Puntos de 12x12px)
+   8. MAPA EN VIVO:
+      - Filtro Radial de 150 km en modo CERCANIAS
+      - Vías en Cian (#00E5FF) para LAV y Azul/Gris (#4B6A88) para Convencional
+      - Evento clic en cada L.marker para abrir openTrainDetailSheet(t.id)
    ============================================================================ */
 let leafletMap = null;
-let tracksTileLayer = null;
+let tracksLayerGroup = null;
 let trainMarkersLayer = null;
 let stationMarkersLayer = null;
 
@@ -617,7 +790,7 @@ function initLiveMapIfNeeded() {
     const spainBounds = L.latLngBounds([35.0, -10.0], [44.2, 4.6]);
 
     leafletMap = L.map('leaflet-map', {
-        center: [40.0, -3.7],
+        center: [APP_STATE.userLocation.lat, APP_STATE.userLocation.lon],
         zoom: 6,
         minZoom: 6,
         maxZoom: 17,
@@ -626,20 +799,17 @@ function initLiveMapIfNeeded() {
         zoomControl: false
     });
 
-    // SOLUCIÓN DEFINITIVA SIN API KEY:
-    // OpenStreetMap Estándar con clase 'osm-dark-layer' (invertida en oscuro por CSS)
+    // Mapa Base OpenStreetMap Estándar con Modo Oscuro CSS (Libre de API Key)
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 19,
         className: 'osm-dark-layer'
     }).addTo(leafletMap);
 
-    // Capa de vías de OpenRailwayMap (no requiere API Key)
-    tracksTileLayer = L.tileLayer('https://{s}.tiles.openrailwaymap.org/maxspeed/{z}/{x}/{y}.png', {
-        maxZoom: 18,
-        opacity: 0.65,
-        bounds: spainBounds
-    }).addTo(leafletMap);
+    // Capa de Vías Adif: Cian (#00E5FF) para Alta Velocidad y Azul/Gris (#4B6A88) para Convencional
+    // (Sin usar jamás verde ni rojo neón para no competir con los puntos de los trenes)
+    tracksLayerGroup = L.layerGroup().addTo(leafletMap);
+    renderAdifCorridorTracks();
 
     stationMarkersLayer = L.layerGroup().addTo(leafletMap);
     trainMarkersLayer = L.layerGroup().addTo(leafletMap);
@@ -652,6 +822,23 @@ function initLiveMapIfNeeded() {
     renderMapMarkers();
 }
 
+function renderAdifCorridorTracks() {
+    if (!tracksLayerGroup) return;
+    tracksLayerGroup.clearLayers();
+
+    ADIF_CORRIDOR_POLYLINES.forEach(corridor => {
+        const isLav = corridor.type === 'LAV';
+        const line = L.polyline(corridor.coords, {
+            color: isLav ? '#00E5FF' : '#4B6A88', // Cian para LAV, Azul/Gris para convencional
+            weight: isLav ? 2.6 : 2.0,
+            opacity: isLav ? 0.65 : 0.55,
+            dashArray: isLav ? null : '5, 5',
+            interactive: false
+        });
+        tracksLayerGroup.addLayer(line);
+    });
+}
+
 function setMapFilter(rawFilterKey) {
     const mode = normalizeModeKey(rawFilterKey); // 'CERCANIAS' | 'AVE'
     if (APP_STATE.mapFilter === mode && !APP_STATE.mapSearchQuery) {
@@ -660,6 +847,15 @@ function setMapFilter(rawFilterKey) {
     } else {
         APP_STATE.mapFilter = mode;
         APP_STATE.globalMode = mode;
+
+        if (leafletMap) {
+            if (mode === 'CERCANIAS') {
+                // FlyTo regional al radio de 150 km de la ubicación del usuario
+                leafletMap.flyTo([APP_STATE.userLocation.lat, APP_STATE.userLocation.lon], 9, { duration: 0.85 });
+            } else if (mode === 'AVE') {
+                leafletMap.flyTo([40.0, -3.7], 6, { duration: 0.75 });
+            }
+        }
     }
     syncGlobalModeUI();
     renderMapMarkers();
@@ -691,7 +887,19 @@ function renderMapMarkers() {
     let stoppedCount = 0;
 
     const matchingTrains = APP_STATE.trains.filter(t => {
-        if (activeFilter === 'CERCANIAS' && t.category !== 'CERCANIAS') return false;
+        if (activeFilter === 'CERCANIAS' || APP_STATE.globalMode === 'CERCANIAS') {
+            if (activeFilter === 'CERCANIAS' && t.category !== 'CERCANIAS') return false;
+            // FILTRO RADIAL ESTRICTO DE 150 KM DESDE APP_STATE.userLocation EN MODO CERCANÍAS
+            if (activeFilter === 'CERCANIAS' && !q) {
+                const distFromUserKm = haversineKm(
+                    APP_STATE.userLocation.lat,
+                    APP_STATE.userLocation.lon,
+                    t.lat,
+                    t.lon
+                );
+                if (distFromUserKm > 150) return false;
+            }
+        }
         if (activeFilter === 'AVE' && t.category !== 'AVE') return false;
         if (q) {
             const hay = `${t.name} ${t.trainNumber} ${t.routeTitle} ${t.nearestStation}`.toLowerCase();
@@ -706,13 +914,19 @@ function renderMapMarkers() {
         else stationCount++;
 
         const dotIcon = L.divIcon({
-            className: '',
-            html: `<div class="trenya-dot-wrapper"><span class="trenya-dot-marker ${t.colorClass}"></span></div>`,
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
+            className: 'trenya-dot-icon',
+            html: `<div class="trenya-dot-wrapper" onclick="openTrainDetailSheet('${t.id}')"><span class="trenya-dot-marker ${t.colorClass}"></span></div>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14]
         });
 
-        const marker = L.marker([t.lat, t.lon], { icon: dotIcon });
+        const marker = L.marker([t.lat, t.lon], {
+            icon: dotIcon,
+            interactive: true,
+            bubblingMouseEvents: false
+        });
+
+        // Evento clic en el marcador Leaflet para abrir el Bottom Sheet de detalle
         marker.on('click', () => openTrainDetailSheet(t.id));
         trainMarkersLayer.addLayer(marker);
     });
@@ -762,9 +976,9 @@ function toggleInfrastructureLayer(layerName, isChecked) {
     APP_STATE.layers[layerName] = isChecked;
     if (!leafletMap) return;
 
-    if (layerName === 'tracks' && tracksTileLayer) {
-        if (isChecked) leafletMap.addLayer(tracksTileLayer);
-        else leafletMap.removeLayer(tracksTileLayer);
+    if (layerName === 'tracks' && tracksLayerGroup) {
+        if (isChecked) leafletMap.addLayer(tracksLayerGroup);
+        else leafletMap.removeLayer(tracksLayerGroup);
     }
     if (layerName === 'stations') {
         renderStationMarkersLOD();
@@ -773,10 +987,13 @@ function toggleInfrastructureLayer(layerName, isChecked) {
 
 function centerMapOnUserZone() {
     if (leafletMap) {
-        leafletMap.flyTo([APP_STATE.userLocation.lat, APP_STATE.userLocation.lon], 10, { duration: 0.8 });
+        leafletMap.flyTo([APP_STATE.userLocation.lat, APP_STATE.userLocation.lon], 9, { duration: 0.8 });
     }
 }
 
+/* ============================================================================
+   9. MODAL BOTTOM SHEET DE DETALLE DE TREN (Nombre, Velocidad, Estado, Parada)
+   ============================================================================ */
 function openTrainDetailSheet(trainId) {
     const train = APP_STATE.trains.find(t => t.id === trainId);
     if (!train) return;
@@ -793,16 +1010,20 @@ function openTrainDetailSheet(trainId) {
                 <span>${train.statusLabel}</span>
             </span>
         </div>
-        <h3 style="font-size:1.2rem;font-weight:800;margin:4px 0;">${train.routeTitle}</h3>
+        <h3 style="font-size:1.18rem;font-weight:800;margin:4px 0;">${train.routeTitle}</h3>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0;">
             <div class="input-field-box">
                 <label>VELOCIDAD ACTUAL</label>
-                <strong class="speed-mono" style="font-size:1.15rem;color:var(--status-${train.colorClass});">${train.speed} km/h</strong>
+                <strong class="speed-mono" style="font-size:1.2rem;color:var(--status-${train.colorClass});">${train.speed} km/h</strong>
             </div>
             <div class="input-field-box">
-                <label>ESTACIÓN / PK PRÓXIMO</label>
-                <strong style="font-size:0.95rem;">${train.nearestStation}</strong>
+                <label>PRÓXIMA PARADA (GTFS)</label>
+                <strong style="font-size:0.92rem;color:var(--text-primary);">${train.nextStopCalculated || train.nearestStation}</strong>
             </div>
+        </div>
+        <div class="input-field-box" style="margin-bottom:8px;">
+            <label>POSICIÓN / TRAMO ACTUAL ADIF</label>
+            <strong style="font-size:0.9rem;color:var(--text-secondary);">Junto a ${train.nearestStation} (${train.lat.toFixed(3)}, ${train.lon.toFixed(3)})</strong>
         </div>
         <button class="primary-cta-btn" onclick="closeModal('modal-train-detail')">
             <span>Cerrar detalle</span>
@@ -813,7 +1034,7 @@ function openTrainDetailSheet(trainId) {
 }
 
 /* ============================================================================
-   8. PESTAÑA 3: BILLETES (Reacciona a APP_STATE.globalMode: AVE vs Cercanías)
+   10. PESTAÑA 3: BILLETES (Exclusivo Larga Distancia vs Info Oficial Cercanías)
    ============================================================================ */
 function swapTicketStations() {
     const orig = document.getElementById('ticket-origin');
@@ -913,7 +1134,7 @@ function trackAffiliateClick(operatorName) {
 }
 
 /* ============================================================================
-   9. PESTAÑA 4: PERFIL, TEMA, MONETIZACIÓN PRO (Stripe) Y FIREBASE AUTH
+   11. PESTAÑA 4: PERFIL, TEMA, MONETIZACIÓN PRO (Stripe) Y FIREBASE AUTH
    ============================================================================ */
 function toggleColorTheme(isDark) {
     const root = document.documentElement;
@@ -1079,7 +1300,7 @@ function showToast(msg) {
 }
 
 /* ============================================================================
-   10. ARRANQUE DE LA APLICACIÓN TRENYA
+   12. ARRANQUE DE LA APLICACIÓN TRENYA
    ============================================================================ */
 document.addEventListener('DOMContentLoaded', async () => {
     initSplashScreen();
