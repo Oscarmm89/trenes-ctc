@@ -1,0 +1,574 @@
+/* ==========================================================================
+   styles.css - SISTEMA DE DISEÑO MOBILE-FIRST B2C "VÍA LIBRE"
+   Tema Oscuro Profesional (#121212 / #1E1E1E) + Acentos de Estado Puros
+   ========================================================================== */
+
+:root,
+html.dark,
+body.dark {
+  /* Paleta Base Oscura Profesional */
+  --bg-primary: #121212;
+  --bg-Outer: #09090b;
+  --bg-card: #1E1E1E;
+  --bg-card-elevated: #262626;
+  --bg-input: #181818;
+  --bg-nav: rgba(20, 20, 20, 0.94);
+
+  /* Tipografía y Contrastes */
+  --text-primary: #F5F5F7;
+  --text-secondary: #A1A1AA;
+  --text-muted: #71717A;
+
+  /* Colores de Estado Puros (Especificación B2C) */
+  --accent-green: #00E676;       /* En marcha / En hora */
+  --accent-green-dim: rgba(0, 230, 118, 0.14);
+  --accent-amber: #FFC107;       /* Retraso leve / En estación */
+  --accent-amber-dim: rgba(255, 193, 7, 0.15);
+  --accent-red: #FF3D00;         /* Alerta Parada en Plena Vía */
+  --accent-red-dim: rgba(255, 61, 0, 0.16);
+  --accent-blue: #38BDF8;        /* Cercanías / Info */
+  --accent-purple: #C084FC;      /* AVE / Alta Velocidad */
+
+  /* Bordes y Sombras */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(0, 230, 118, 0.55);
+  --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.35);
+  --shadow-floating: 0 12px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* MODO CLARO (Alta Visibilidad Diurna) */
+html.light,
+body.light-theme {
+  --bg-primary: #F4F6F9;
+  --bg-Outer: #E2E8F0;
+  --bg-card: #FFFFFF;
+  --bg-card-elevated: #F8FAFC;
+  --bg-input: #FFFFFF;
+  --bg-nav: rgba(255, 255, 255, 0.95);
+
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+
+  --accent-green: #00C853;
+  --accent-green-dim: rgba(0, 200, 83, 0.12);
+  --accent-amber: #D97706;
+  --accent-amber-dim: rgba(217, 119, 6, 0.12);
+  --accent-red: #DC2626;
+  --accent-red-dim: rgba(220, 38, 38, 0.12);
+
+  --border-subtle: rgba(15, 23, 42, 0.09);
+  --border-focus: rgba(0, 200, 83, 0.5);
+  --shadow-card: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --shadow-floating: 0 10px 28px rgba(15, 23, 42, 0.14);
+}
+
+/* Reset y Tipografía Legible (Mínimo 16px base) */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  background-color: var(--bg-Outer);
+  color: var(--text-primary);
+  overflow: hidden;
+  overscroll-behavior-y: none;
+}
+
+/* ==========================================================================
+   ESTRUCTURA MOBILE-FIRST (Contenedor estilo App Telegram / Instagram en PC)
+   ========================================================================== */
+.app-shell {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  height: 100dvh;
+  margin: 0 auto;
+  background-color: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.75);
+  border-left: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  transition: max-width 0.3s ease, background-color 0.3s ease;
+}
+
+/* Opción para expandir el contenedor en escritorio cuando se mira el mapa */
+@media (min-width: 768px) {
+  .app-shell.map-expanded {
+    max-width: 960px;
+  }
+}
+
+/* ==========================================================================
+   VISTAS Y TRANSICIONES SUAVES (0.3s ease)
+   ========================================================================== */
+.views-viewport {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  height: calc(100dvh - 70px);
+  overflow: hidden;
+}
+
+.tab-view {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 92px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+  pointer-events: none;
+}
+
+.tab-view.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+  z-index: 5;
+}
+
+/* Vista Mapa sin scroll vertical para que Leaflet ocupe el 100% */
+#view-map.tab-view {
+  padding-bottom: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollbar oculta pero funcional */
+.tab-view::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.tab-view,
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ==========================================================================
+   COMPONENTES DE TARJETAS (#1E1E1E) Y BOTONES
+   ========================================================================== */
+.b2c-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.3s ease;
+}
+
+.b2c-card-interactive:active {
+  transform: scale(0.985);
+}
+
+.b2c-card-interactive:hover {
+  border-color: rgba(0, 230, 118, 0.35);
+}
+
+.b2c-input {
+  width: 100%;
+  background-color: var(--bg-input);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 14px 16px 14px 46px;
+  font-size: 16px; /* Evita zoom forzado en iOS y garantiza legibilidad */
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.b2c-input:focus {
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 3px var(--accent-green-dim);
+}
+
+/* Pills / Chips de Filtro Grandes */
+.filter-pill-lg {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-subtle);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.filter-pill-lg:hover {
+  border-color: rgba(0, 230, 118, 0.4);
+}
+
+.filter-pill-lg.active {
+  background-color: var(--accent-green);
+  color: #002912;
+  border-color: var(--accent-green);
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(0, 230, 118, 0.3);
+}
+
+/* ==========================================================================
+   ANIMACIONES (@keyframes pulse) E INDICADORES EN VIVO
+   ========================================================================== */
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 9px rgba(0, 230, 118, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 230, 118, 0);
+  }
+}
+
+@keyframes pulse-amber {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(255, 193, 7, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+  }
+}
+
+@keyframes pulse-danger {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 61, 0, 0.85);
+  }
+  50% {
+    box-shadow: 0 0 16px 4px rgba(255, 61, 0, 0.75);
+  }
+}
+
+.live-dot-green {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: var(--accent-green);
+  display: inline-block;
+  animation: pulse 1.8s infinite;
+}
+
+.live-dot-amber {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: var(--accent-amber);
+  display: inline-block;
+  animation: pulse-amber 2s infinite;
+}
+
+.live-dot-red {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: var(--accent-red);
+  display: inline-block;
+  animation: pulse-danger 1.2s infinite;
+}
+
+/* Badges de Estado Puros */
+.status-badge-green {
+  background-color: var(--accent-green-dim);
+  color: var(--accent-green);
+  border: 1px solid rgba(0, 230, 118, 0.3);
+}
+
+.status-badge-amber {
+  background-color: var(--accent-amber-dim);
+  color: var(--accent-amber);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.status-badge-red {
+  background-color: var(--accent-red-dim);
+  color: var(--accent-red);
+  border: 1px solid rgba(255, 61, 0, 0.4);
+  animation: pulse-danger 1.5s infinite;
+}
+
+/* ==========================================================================
+   BARRA DE NAVEGACIÓN INFERIOR FIJA (Bottom Navigation Bar)
+   ========================================================================== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  height: calc(68px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--bg-nav);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border-subtle);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: center;
+  z-index: 40;
+  transition: max-width 0.3s ease, background-color 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .app-shell.map-expanded .bottom-nav {
+    max-width: 960px;
+  }
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 100%;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.2s ease;
+  position: relative;
+}
+
+.bottom-nav-item .nav-icon-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.bottom-nav-item .nav-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: color 0.3s ease;
+}
+
+.bottom-nav-item.active {
+  color: var(--accent-green);
+}
+
+.bottom-nav-item.active .nav-icon-pill {
+  background-color: var(--accent-green-dim);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   ESTILOS DEL MAPA EN VIVO (LEAFLET) Y MARCADORES CON LATIDO
+   ========================================================================== */
+#leaflet-map {
+  width: 100%;
+  height: 100%;
+  background-color: #0c0e14;
+  z-index: 1;
+}
+
+.leaflet-container {
+  background-color: #0c0e14 !important;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Filtro oscuro táctico en Modo Oscuro, natural en Modo Claro */
+.leaflet-tile-pane {
+  filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(115%) grayscale(20%);
+  transition: filter 0.3s ease;
+}
+
+body.light-theme .leaflet-tile-pane,
+html.light .leaflet-tile-pane {
+  filter: none !important;
+}
+
+body.light-theme #leaflet-map,
+body.light-theme .leaflet-container {
+  background-color: #e2e8f0 !important;
+}
+
+/* Marcadores de Tren en el Mapa */
+.custom-train-marker {
+  z-index: 900 !important;
+}
+
+.train-marker-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 9999px;
+  background: rgba(18, 18, 18, 0.94);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid var(--accent-green);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.65);
+  color: #FFFFFF;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.light-theme .train-marker-pill {
+  background: rgba(255, 255, 255, 0.96);
+  color: #0F172A;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.train-marker-pill:hover,
+.train-marker-pill.selected {
+  transform: scale(1.14);
+  box-shadow: 0 0 20px rgba(0, 230, 118, 0.75);
+  z-index: 1200 !important;
+}
+
+.train-marker-pill.status-amber {
+  border-color: var(--accent-amber);
+}
+
+.train-marker-pill.status-red {
+  border-color: var(--accent-red) !important;
+  background: rgba(45, 10, 10, 0.96) !important;
+  color: #FFDAD6 !important;
+  animation: pulse-danger 1.4s infinite;
+}
+
+/* Estaciones en el Mapa (LOD) */
+.station-marker-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background: rgba(24, 24, 28, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #E4E4E7;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+.station-marker-badge.major {
+  border-color: rgba(0, 230, 118, 0.6);
+  color: #FFFFFF;
+}
+
+.station-marker-badge.dot-only {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+/* ==========================================================================
+   INTERRUPTOR (TOGGLE SWITCH ESTILO iOS / ANDROID MODERNO)
+   ========================================================================== */
+.ios-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.ios-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.ios-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #3F3F46;
+  transition: 0.3s ease;
+  border-radius: 34px;
+}
+
+.ios-slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #FFFFFF;
+  transition: 0.3s ease;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.ios-switch input:checked + .ios-slider {
+  background-color: var(--accent-green);
+}
+
+.ios-switch input:checked + .ios-slider:before {
+  transform: translateX(22px);
+}
+
+/* ==========================================================================
+   BOTTOM SHEET DESLIZANTE (FICHA DE TREN EN VIVO Y MODALES)
+   ========================================================================== */
+.bottom-sheet-panel {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 105%);
+  width: 100%;
+  max-width: 480px;
+  max-height: 84dvh;
+  background-color: var(--bg-card);
+  border-top: 1px solid var(--border-subtle);
+  border-radius: 24px 24px 0 0;
+  box-shadow: var(--shadow-floating);
+  z-index: 60;
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.bottom-sheet-panel.open {
+  transform: translate(-50%, 0);
+}
+
+/* Banner Gradiente Vía Libre PRO */
+.pro-gradient-banner {
+  background: linear-gradient(135deg, rgba(0, 230, 118, 0.18) 0%, rgba(56, 189, 248, 0.14) 50%, rgba(192, 132, 252, 0.18) 100%);
+  border: 1.5px solid rgba(0, 230, 118, 0.45);
+}
+
