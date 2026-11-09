@@ -1,22 +1,22 @@
 /* ============================================================================
-   TRENYA PWA — LÓGICA MODULAR MINIMALISTA B2C (app.js)
-   Filosofía: "No me muestres nada hasta que yo te lo pida"
-   Mantiene INTACTA toda la lógica profunda:
-   - Fetch GTFS-RT de Renfe (/api/renfe, localhost:3000, renfe_live.json)
-   - Validación de 75 segundos (5 ciclos de 15s) para alertas de Parada en Vía
-   - Cálculo cinemático Haversine y catálogo de estaciones Adif
+   TRENYA PWA — LÓGICA MODULAR MINIMALISTA B2C - FASE 3 (app.js)
+   - Mapa Base OpenStreetMap Estándar con Modo Oscuro CSS (100% libre de API Key)
+   - Sincronización Global de Estado (APP_STATE.globalMode: 'ALL' | 'CERCANIAS' | 'AVE')
+   - Sincronización automática entre Inicio, Mapa en Vivo y Vista Billetes
+   - Mantiene intacto fetch GTFS-RT, validación de 75s (5 ciclos) y Haversine
    ============================================================================ */
 
 window.__TRENYA_BOOTED__ = true;
 
 /* ============================================================================
-   1. ESTADO GLOBAL DE TRENYA
+   1. ESTADO GLOBAL DE TRENYA (SINCRONIZACIÓN GLOBAL)
    ============================================================================ */
 const APP_STATE = {
     activeTab: 'home',
-    // REGLA MINIMALISTA: El mapa NO carga nada por defecto ('NONE') hasta que el
-    // usuario elija [Cercanías], [AVE] o realice una búsqueda.
-    mapFilter: 'NONE',        // 'NONE' | 'CERCANIAS_MD' | 'AVE_LD'
+    // Estado global sincronizado entre Inicio, Mapa y Billetes: 'ALL' | 'CERCANIAS' | 'AVE'
+    globalMode: 'ALL',
+    // Filtro del mapa ('NONE' al arrancar hasta que el usuario elija modo o busque)
+    mapFilter: 'NONE',        // 'NONE' | 'CERCANIAS' | 'AVE'
     mapSearchQuery: '',
     userLocation: {
         name: 'Sevilla',
@@ -31,7 +31,7 @@ const APP_STATE = {
     currentUser: null,
     layers: {
         tracks: true,
-        stations: false       // Apagadas por defecto para mantener el mapa ultra limpio
+        stations: false
     }
 };
 
@@ -83,7 +83,6 @@ function initSplashScreen() {
     const splash = document.getElementById('splash-screen');
     if (!splash) return;
 
-    // Entre 2.5 y 3 segundos (2800ms): lanza el fade-out y luego lo retira del DOM
     setTimeout(() => {
         splash.classList.add('fade-out');
         setTimeout(() => {
@@ -132,19 +131,19 @@ function findNearestStation(lat, lon) {
 
 function classifyTrainService(label, id) {
     const raw = ((label || '') + ' ' + (id || '')).toUpperCase();
-    if (raw.includes('AVLO')) return { type: 'Avlo', category: 'AVE_LD', icon: '🚄' };
-    if (raw.includes('ALVIA')) return { type: 'Alvia', category: 'AVE_LD', icon: '🚄' };
-    if (raw.includes('EUROMED')) return { type: 'Euromed', category: 'AVE_LD', icon: '🚄' };
-    if (raw.includes('INTERCITY')) return { type: 'Intercity', category: 'AVE_LD', icon: '🚄' };
-    if (raw.includes('AVE')) return { type: 'AVE', category: 'AVE_LD', icon: '🚄' };
-    if (raw.includes('AVANT')) return { type: 'Avant', category: 'CERCANIAS_MD', icon: '🚈' };
+    if (raw.includes('AVLO')) return { type: 'Avlo', category: 'AVE', icon: '🚄' };
+    if (raw.includes('ALVIA')) return { type: 'Alvia', category: 'AVE', icon: '🚄' };
+    if (raw.includes('EUROMED')) return { type: 'Euromed', category: 'AVE', icon: '🚄' };
+    if (raw.includes('INTERCITY')) return { type: 'Intercity', category: 'AVE', icon: '🚄' };
+    if (raw.includes('AVE')) return { type: 'AVE', category: 'AVE', icon: '🚄' };
+    if (raw.includes('AVANT')) return { type: 'Avant', category: 'CERCANIAS', icon: '🚈' };
     if (raw.includes('MD') || raw.includes('MEDIA') || raw.includes('REGIONAL')) {
-        return { type: 'Media Distancia', category: 'CERCANIAS_MD', icon: '🚈' };
+        return { type: 'Media Distancia', category: 'CERCANIAS', icon: '🚈' };
     }
     if (raw.includes('C-') || raw.includes('CERC') || raw.includes('RODALIES') || /^[12345789]\d{4}$/.test(id)) {
-        return { type: 'Cercanías', category: 'CERCANIAS_MD', icon: '🚈' };
+        return { type: 'Cercanías', category: 'CERCANIAS', icon: '🚈' };
     }
-    return { type: 'AVE / LD', category: 'AVE_LD', icon: '🚄' };
+    return { type: 'AVE / LD', category: 'AVE', icon: '🚄' };
 }
 
 function inferCorridorRoute(lat, lon, numberStr) {
@@ -207,7 +206,6 @@ async function fetchLiveTrainsGTFS() {
         const prev = APP_STATE.previousTrainsState[rawId];
         let speedKmh = Number(pos.speed || 0) * 3.6;
 
-        // Cálculo Haversine si el feed reporta velocidad 0 pero las coordenadas avanzaron
         if (prev && (!speedKmh || speedKmh < 1)) {
             const distKm = haversineKm(prev.lat, prev.lon, lat, lon);
             const dtHours = Math.max((nowSec - prev.timestamp) / 3600, 15 / 3600);
@@ -222,9 +220,7 @@ async function fetchLiveTrainsGTFS() {
         const isAtStationOrDepot = nearest.distanceKm <= 1.25 || (nearest.station && nearest.station.isDepot);
         const isMoving = speedKmh >= 5;
 
-        // =====================================================================
         // VALIDACIÓN DE 75 SEGUNDOS (5 CICLOS DE 15s) PARA PARADAS EN VÍA
-        // =====================================================================
         let consecutiveStopped = prev ? prev.consecutiveStopped : 0;
         if (!isMoving && !isAtStationOrDepot) {
             consecutiveStopped += 1;
@@ -265,7 +261,7 @@ async function fetchLiveTrainsGTFS() {
             trainNumber,
             name: `${serviceInfo.type} ${trainNumber}`,
             serviceType: serviceInfo.type,
-            category: serviceInfo.category,
+            category: serviceInfo.category, // 'CERCANIAS' | 'AVE'
             icon: serviceInfo.icon,
             routeTitle,
             lat,
@@ -291,7 +287,7 @@ async function fetchLiveTrainsGTFS() {
 
 function ensureCommuterTrainsAvailable(list) {
     const hasSevillaCommuter = list.some(t =>
-        haversineKm(t.lat, t.lon, 37.34, -5.95) < 30 && t.category === 'CERCANIAS_MD'
+        haversineKm(t.lat, t.lon, 37.34, -5.95) < 30 && t.category === 'CERCANIAS'
     );
     if (!hasSevillaCommuter) {
         list.unshift(
@@ -300,7 +296,7 @@ function ensureCommuterTrainsAvailable(list) {
                 trainNumber: '23014',
                 name: 'Cercanías C-1 23014',
                 serviceType: 'Cercanías',
-                category: 'CERCANIAS_MD',
+                category: 'CERCANIAS',
                 icon: '🚈',
                 routeTitle: 'Dos Hermanas ➔ Sevilla Santa Justa',
                 lat: 37.338,
@@ -318,7 +314,7 @@ function ensureCommuterTrainsAvailable(list) {
                 trainNumber: '13042',
                 name: 'Media Distancia 13042',
                 serviceType: 'Media Distancia',
-                category: 'CERCANIAS_MD',
+                category: 'CERCANIAS',
                 icon: '🚈',
                 routeTitle: 'Cádiz ➔ Dos Hermanas ➔ Sevilla Santa Justa',
                 lat: 37.287,
@@ -344,8 +340,44 @@ function generateFallbackCommuterDataset() {
 }
 
 /* ============================================================================
-   5. NAVEGACIÓN INFERIOR (BOTTOM NAVIGATION BAR) Y SALTO AUTOMÁTICO AL MAPA
+   5. SINCRONIZACIÓN GLOBAL DE ESTADO (INICIO <-> MAPA <-> BILLETES)
    ============================================================================ */
+function normalizeModeKey(mode) {
+    if (!mode) return 'ALL';
+    const m = mode.toUpperCase();
+    if (m.includes('CERC')) return 'CERCANIAS';
+    if (m.includes('AVE') || m.includes('LD')) return 'AVE';
+    return 'ALL';
+}
+
+function syncGlobalModeUI() {
+    const mode = APP_STATE.globalMode; // 'ALL' | 'CERCANIAS' | 'AVE'
+
+    // 1. Sincronizar botones gigantes en Inicio
+    const homeBtnCerc = document.getElementById('home-btn-cercanias');
+    const homeBtnAve = document.getElementById('home-btn-ave');
+    if (homeBtnCerc) homeBtnCerc.classList.toggle('active-mode', mode === 'CERCANIAS');
+    if (homeBtnAve) homeBtnAve.classList.toggle('active-mode', mode === 'AVE');
+
+    // 2. Sincronizar chips superiores del Mapa (map-scope-chips)
+    const mapChipCerc = document.getElementById('scope-cercanias');
+    const mapChipAve = document.getElementById('scope-ave');
+    if (mapChipCerc) mapChipCerc.classList.toggle('active', APP_STATE.mapFilter === 'CERCANIAS');
+    if (mapChipAve) mapChipAve.classList.toggle('active', APP_STATE.mapFilter === 'AVE');
+
+    // 3. Sincronizar Selector Superior y Contenido de la Vista Billetes
+    const tabLd = document.getElementById('tickets-tab-ld');
+    const tabCerc = document.getElementById('tickets-tab-cercanias');
+    const secLd = document.getElementById('tickets-ld-section');
+    const secCerc = document.getElementById('tickets-cercanias-section');
+
+    const isCercaniasTickets = (mode === 'CERCANIAS');
+    if (tabLd) tabLd.classList.toggle('active', !isCercaniasTickets);
+    if (tabCerc) tabCerc.classList.toggle('active', isCercaniasTickets);
+    if (secLd) secLd.classList.toggle('hidden', isCercaniasTickets);
+    if (secCerc) secCerc.classList.toggle('hidden', !isCercaniasTickets);
+}
+
 function switchTab(targetTab) {
     APP_STATE.activeTab = targetTab;
 
@@ -362,6 +394,9 @@ function switchTab(targetTab) {
         shell.classList.toggle('map-expanded', targetTab === 'map');
     }
 
+    // Asegurar que la vista destino refleje siempre APP_STATE.globalMode
+    syncGlobalModeUI();
+
     if (targetTab === 'map') {
         initLiveMapIfNeeded();
         setTimeout(() => {
@@ -373,20 +408,25 @@ function switchTab(targetTab) {
     }
 }
 
-// Al tocar uno de los dos botones gigantes en Inicio ([Cercanías] o [AVE]),
-// salta automáticamente a la pestaña "Mapa en Vivo" con ese filtro aplicado.
-function selectCategoryAndGoToMap(categoryKey) {
-    APP_STATE.mapFilter = categoryKey;
+// Acción cuando el usuario pulsa en Inicio los botones gigantes [Cercanías] o [AVE]:
+// 1. Actualiza APP_STATE.globalMode ('CERCANIAS' | 'AVE')
+// 2. Fuerza el filtro en el Mapa y en Billetes
+// 3. Ejecuta switchTab('map') y renderiza solo esos trenes
+function selectCategoryAndGoToMap(rawCategory) {
+    const mode = normalizeModeKey(rawCategory); // 'CERCANIAS' | 'AVE'
+    APP_STATE.globalMode = mode;
+    APP_STATE.mapFilter = mode;
     APP_STATE.mapSearchQuery = '';
+
     const mapInput = document.getElementById('map-search-input');
     if (mapInput) mapInput.value = '';
 
-    updateMapFilterChipsUI();
+    syncGlobalModeUI();
     switchTab('map');
 
     setTimeout(() => {
         if (leafletMap) {
-            if (categoryKey === 'AVE_LD') {
+            if (mode === 'AVE') {
                 leafletMap.flyTo([40.0, -3.7], 6, { duration: 0.7 });
             } else {
                 leafletMap.flyTo([APP_STATE.userLocation.lat, APP_STATE.userLocation.lon], 9, { duration: 0.7 });
@@ -396,8 +436,17 @@ function selectCategoryAndGoToMap(categoryKey) {
     }, 220);
 }
 
-// Al buscar en el buscador gigante "¿A dónde vas?" de Inicio, salta al Mapa en Vivo
-// aplicando esa búsqueda.
+// Selector superior en la vista Billetes
+function setTicketsMode(rawMode) {
+    const mode = normalizeModeKey(rawMode);
+    APP_STATE.globalMode = mode;
+    APP_STATE.mapFilter = mode;
+    syncGlobalModeUI();
+    if (leafletMap) {
+        renderMapMarkers();
+    }
+}
+
 function handleHomeSearchSubmit(event) {
     if (event) event.preventDefault();
     const input = document.getElementById('home-search-input');
@@ -473,7 +522,7 @@ function renderSavedRoutesSection() {
 
         const nextInfo = matchingTrain
             ? `${matchingTrain.name} · ${matchingTrain.statusLabel}`
-            : 'Toca para ver tu línea en el Mapa en Vivo';
+            : 'Toca para abrir tu línea en el Mapa en Vivo';
 
         return `
             <div class="b2c-card status-border-green" onclick="focusSavedRouteOnMap('${r.origin}', '${r.destination}')">
@@ -531,9 +580,10 @@ function removeSavedRoute(routeId, event) {
 }
 
 function focusSavedRouteOnMap(originName, destName) {
-    APP_STATE.mapFilter = 'CERCANIAS_MD';
+    APP_STATE.globalMode = 'CERCANIAS';
+    APP_STATE.mapFilter = 'CERCANIAS';
     APP_STATE.mapSearchQuery = '';
-    updateMapFilterChipsUI();
+    syncGlobalModeUI();
 
     const st = SPANISH_STATIONS.find(s =>
         s.name.toLowerCase().includes(originName.toLowerCase()) ||
@@ -554,7 +604,7 @@ function focusSavedRouteOnMap(originName, destName) {
 }
 
 /* ============================================================================
-   7. MAPA EN VIVO DESATURADO (Sin carga por defecto + Puntos de 12x12px)
+   7. MAPA EN VIVO (OpenStreetMap Oscuro Sin API Key + Puntos de 12x12px)
    ============================================================================ */
 let leafletMap = null;
 let tracksTileLayer = null;
@@ -576,12 +626,15 @@ function initLiveMapIfNeeded() {
         zoomControl: false
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-        subdomains: 'abcd',
-        maxZoom: 18
+    // SOLUCIÓN DEFINITIVA SIN API KEY:
+    // OpenStreetMap Estándar con clase 'osm-dark-layer' (invertida en oscuro por CSS)
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19,
+        className: 'osm-dark-layer'
     }).addTo(leafletMap);
 
+    // Capa de vías de OpenRailwayMap (no requiere API Key)
     tracksTileLayer = L.tileLayer('https://{s}.tiles.openrailwaymap.org/maxspeed/{z}/{x}/{y}.png', {
         maxZoom: 18,
         opacity: 0.65,
@@ -599,22 +652,17 @@ function initLiveMapIfNeeded() {
     renderMapMarkers();
 }
 
-function setMapFilter(filterKey) {
-    // Si el usuario vuelve a tocar el mismo filtro activo, lo desactiva ('NONE')
-    if (APP_STATE.mapFilter === filterKey && !APP_STATE.mapSearchQuery) {
+function setMapFilter(rawFilterKey) {
+    const mode = normalizeModeKey(rawFilterKey); // 'CERCANIAS' | 'AVE'
+    if (APP_STATE.mapFilter === mode && !APP_STATE.mapSearchQuery) {
         APP_STATE.mapFilter = 'NONE';
+        APP_STATE.globalMode = 'ALL';
     } else {
-        APP_STATE.mapFilter = filterKey;
+        APP_STATE.mapFilter = mode;
+        APP_STATE.globalMode = mode;
     }
-    updateMapFilterChipsUI();
+    syncGlobalModeUI();
     renderMapMarkers();
-}
-
-function updateMapFilterChipsUI() {
-    const btnCerc = document.getElementById('scope-cercanias');
-    const btnAve = document.getElementById('scope-ave');
-    if (btnCerc) btnCerc.classList.toggle('active', APP_STATE.mapFilter === 'CERCANIAS_MD');
-    if (btnAve) btnAve.classList.toggle('active', APP_STATE.mapFilter === 'AVE_LD');
 }
 
 function handleMapSearch(val) {
@@ -622,21 +670,14 @@ function handleMapSearch(val) {
     renderMapMarkers();
 }
 
-// =============================================================================
-// REGLA DE RENDERIZADO Y MARCADORES DE PUNTOS 12x12px (ESTILO GOOGLE MAPS)
-// - El mapa NO carga nada por defecto hasta que haya un filtro o búsqueda activa.
-// - Cada tren es únicamente un punto circular sólido de 12x12px con pulse.
-// - Al tocar el punto se abre el Bottom Sheet con el número, ruta y velocidad.
-// =============================================================================
 function renderMapMarkers() {
     if (!leafletMap || !trainMarkersLayer) return;
     trainMarkersLayer.clearLayers();
 
     const q = APP_STATE.mapSearchQuery;
-    const activeFilter = APP_STATE.mapFilter;
+    const activeFilter = APP_STATE.mapFilter; // 'NONE' | 'CERCANIAS' | 'AVE'
     const emptyPrompt = document.getElementById('map-empty-prompt');
 
-    // Si no hay ni filtro ni búsqueda activa, no pintamos NADA en el mapa
     if (activeFilter === 'NONE' && !q) {
         if (emptyPrompt) emptyPrompt.classList.remove('hidden');
         updateMapCounters(0, 0, 0);
@@ -650,8 +691,8 @@ function renderMapMarkers() {
     let stoppedCount = 0;
 
     const matchingTrains = APP_STATE.trains.filter(t => {
-        if (activeFilter === 'CERCANIAS_MD' && t.category !== 'CERCANIAS_MD') return false;
-        if (activeFilter === 'AVE_LD' && t.category !== 'AVE_LD') return false;
+        if (activeFilter === 'CERCANIAS' && t.category !== 'CERCANIAS') return false;
+        if (activeFilter === 'AVE' && t.category !== 'AVE') return false;
         if (q) {
             const hay = `${t.name} ${t.trainNumber} ${t.routeTitle} ${t.nearestStation}`.toLowerCase();
             if (!hay.includes(q)) return false;
@@ -664,7 +705,6 @@ function renderMapMarkers() {
         else if (t.speed > 0) movingCount++;
         else stationCount++;
 
-        // Marcador minimalista: círculo sólido de 12x12px sin texto flotante
         const dotIcon = L.divIcon({
             className: '',
             html: `<div class="trenya-dot-wrapper"><span class="trenya-dot-marker ${t.colorClass}"></span></div>`,
@@ -737,7 +777,6 @@ function centerMapOnUserZone() {
     }
 }
 
-/* --- BOTTOM SHEET DE DETALLE DE TREN (Solo se abre al hacer clic en un punto) --- */
 function openTrainDetailSheet(trainId) {
     const train = APP_STATE.trains.find(t => t.id === trainId);
     if (!train) return;
@@ -774,7 +813,7 @@ function openTrainDetailSheet(trainId) {
 }
 
 /* ============================================================================
-   8. PESTAÑA 3: BILLETES (Afiliados Trainline / Omio)
+   8. PESTAÑA 3: BILLETES (Reacciona a APP_STATE.globalMode: AVE vs Cercanías)
    ============================================================================ */
 function swapTicketStations() {
     const orig = document.getElementById('ticket-origin');
@@ -803,7 +842,6 @@ function renderAffiliateTicketCards(origin, destination, dateStr) {
         heading.textContent = `${origin.split(' ')[0]} ➔ ${destination.split(' ')[0]}`;
     }
 
-    // [INTEGRACIÓN FUTURA: TRAINLINE / OMIO AFFILIATES]
     const AFFILIATE_BASE_URL = "https://www.thetrainline.com/es?utm_source=trenya_pwa&utm_medium=affiliate";
 
     const sampleOffers = [
@@ -912,7 +950,6 @@ function selectStripePlan(planKey) {
 }
 
 function startStripeCheckout() {
-    // [INTEGRACIÓN FUTURA: STRIPE CHECKOUT]
     APP_STATE.isUserPro = true;
     localStorage.setItem('trenya_is_pro', 'true');
 
@@ -933,7 +970,6 @@ function startStripeCheckout() {
     showToast('🎉 ¡Bienvenido a TrenYa PRO! Alertas activadas.');
 }
 
-// [INTEGRACIÓN FUTURA: FIREBASE AUTH]
 function handleAuthAction() {
     if (APP_STATE.currentUser) {
         APP_STATE.currentUser = null;
@@ -1046,10 +1082,8 @@ function showToast(msg) {
    10. ARRANQUE DE LA APLICACIÓN TRENYA
    ============================================================================ */
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Lanzar y temporizar el Splash Screen (2.8 segundos)
     initSplashScreen();
 
-    // 2. Saludo dinámico
     const hour = new Date().getHours();
     const greetEl = document.getElementById('greeting-time-text');
     if (greetEl) {
@@ -1058,13 +1092,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         else greetEl.textContent = 'Buenas noches 🌙';
     }
 
-    // 3. Fecha de hoy en la pestaña Billetes
     const dateInput = document.getElementById('ticket-date');
     if (dateInput) {
         dateInput.value = new Date().toISOString().split('T')[0];
     }
 
-    // 4. Cargar rutas guardadas y sesión
     loadSavedRoutes();
     if (localStorage.getItem('trenya_is_pro') === 'true') {
         APP_STATE.isUserPro = true;
@@ -1074,7 +1106,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         try { APP_STATE.currentUser = JSON.parse(savedUser); updateAuthUI(); } catch (_) {}
     }
 
-    // 5. Cargar el catálogo de 1.050 estaciones si está disponible
     try {
         const stRes = await fetch('./stations.json');
         if (stRes.ok) {
@@ -1090,13 +1121,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } catch (_) {}
 
-    // 6. Renderizar Mis Rutas, Billetes y ciclo GTFS-RT en segundo plano cada 15s
     renderSavedRoutesSection();
     renderAffiliateTicketCards('Madrid Puerta de Atocha', 'Sevilla Santa Justa', '');
+    syncGlobalModeUI();
+
     await fetchLiveTrainsGTFS();
     setInterval(fetchLiveTrainsGTFS, 15000);
 
-    // 7. Service Worker PWA
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
