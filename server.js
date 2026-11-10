@@ -1,11 +1,12 @@
-// server.js - Servidor local de desarrollo
+// server.js - Servidor local de desarrollo ("TrenYa")
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
 const PORT = 3000;
-const RENFE_POSITIONS_URL = 'https://gtfsrt.renfe.com/vehicle_positions_LD.json';
-const RENFE_TRIPS_URL = 'https://gtfsrt.renfe.com/trip_updates_LD.json';
+const ENDPOINT_LD = 'https://gtfsrt.renfe.com/vehicle_positions_LD.json';
+const ENDPOINT_CERCANIAS = 'https://gtfsrt.renfe.com/vehicle_positions.json';
+const FETCH_TIMEOUT_MS = 7000;
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -18,10 +19,31 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
+async function fetchRenfeEndpoint(url, timeoutMs = FETCH_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'application/json'
+      }
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    return Array.isArray(data && data.entity) ? data.entity : [];
+  } catch (_) {
+    return [];
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(200);
@@ -31,29 +53,26 @@ const server = http.createServer(async (req, res) => {
   const parsedUrl = new URL(req.url, `http://localhost:${PORT}`);
 
   if (parsedUrl.pathname === '/api/renfe') {
-    const type = parsedUrl.searchParams.get('type') || 'vehicles';
-    const targetUrl = type === 'trips' ? RENFE_TRIPS_URL : RENFE_POSITIONS_URL;
-
+    res.setHeader('Cache-Control', 's-maxage=10, stale-while-revalidate=20');
     try {
-      const response = await fetch(targetUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-          'Accept': 'application/json'
-        }
-      });
-
-      if (!response.ok) throw new Error(`Status ${response.status}`);
-      const data = await response.json();
-      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-      return res.end(JSON.stringify(data));
+      const [ldEntities, cercaniasEntities] = await Promise.all([
+        fetchRenfeEndpoint(ENDPOINT_LD),
+        fetchRenfeEndpoint(ENDPOINT_CERCANIAS)
+      ]);
+      const combined = [...ldEntities, ...cercaniasEntities];
+      if (combined.length > 0) {
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        return res.end(JSON.stringify({ entity: combined }));
+      }
+      throw new Error('Ambos endpoints devolvieron vacío');
     } catch (err) {
       const fallbackFile = path.join(__dirname, 'renfe_live.json');
       if (fs.existsSync(fallbackFile)) {
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
         return res.end(fs.readFileSync(fallbackFile));
       }
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ error: err.message }));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ entity: [] }));
     }
   }
 
@@ -74,4 +93,3 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log(`Servidor local activo en http://localhost:${PORT}`);
 });
-
