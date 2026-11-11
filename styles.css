@@ -413,7 +413,8 @@ html, body {
     flex-shrink: 0;
 }
 
-/* Lista Flotante de Sugerencias (Autocompletado a partir de 3 caracteres, máx 5) */
+/* Lista Flotante de Sugerencias (#search-suggestions, a partir de 3 caracteres, máx 5) */
+#search-suggestions,
 .autocomplete-dropdown {
     position: absolute;
     top: calc(100% + 8px);
@@ -1101,6 +1102,7 @@ html.dark .leaflet-layer.osm-dark-layer {
     margin-top: 2px;
 }
 
+.save-favorite-btn,
 .fav-heart-btn {
     width: 42px;
     height: 42px;
@@ -1116,10 +1118,12 @@ html.dark .leaflet-layer.osm-dark-layer {
     transition: transform 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 }
 
+.save-favorite-btn:active,
 .fav-heart-btn:active {
     transform: scale(0.9);
 }
 
+.save-favorite-btn.is-fav,
 .fav-heart-btn.is-fav {
     color: #FF3D00;
     border-color: rgba(255, 61, 0, 0.5);
